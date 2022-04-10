@@ -9,7 +9,7 @@ router.get('/sign-s3', function (req, res) {
   const s3 = new aws.S3();
   const fileName = req.query['file-name'];
   const fileType = req.query['file-type'];
-  const bucketName = req.query.bucketName;
+  const bucketName = req.query['bucket-name'];
   const s3Params = {
     Bucket: S3_BUCKET + '/' + bucketName,
     Key: fileName,
@@ -17,6 +17,7 @@ router.get('/sign-s3', function (req, res) {
     ContentType: fileType,
     ACL: 'public-read'
   };
+  console.log(s3Params.Bucket);
 
   s3.getSignedUrl('putObject', s3Params, (err, data) => {
     if (err){
