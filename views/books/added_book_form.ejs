@@ -20,6 +20,8 @@
       <input type="file" name="coverImage" id="cover-image">
       <label>Price: </label>
       <input type="text" name="price"><br><br>
+      <label for="discription">Discription</label>
+      <input type="text" name="discription"><br><br>
       <label>Author: </label>
       <input type="text" name="authorId"><br><br>
       <button type="submit">Create</button>
@@ -39,7 +41,7 @@
 
     function getSignedRequest(file) {
       const xhr = new XMLHttpRequest();
-      xhr.open('GET', `/api/sign-s3?file-name=${file.name}&file-type=${file.type}`);
+      xhr.open('GET', `/api/sign-s3?file-name=${file.name}&file-type=${file.type}&bucket-name=book-cover`);
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
