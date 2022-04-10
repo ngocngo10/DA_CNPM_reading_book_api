@@ -9,8 +9,9 @@ router.get('/sign-s3', function (req, res) {
   const s3 = new aws.S3();
   const fileName = req.query['file-name'];
   const fileType = req.query['file-type'];
+  const bucketName = req.query.bucketName;
   const s3Params = {
-    Bucket: S3_BUCKET + '/book-covers',
+    Bucket: S3_BUCKET + '/' + bucketName,
     Key: fileName,
     Expires: 60,
     ContentType: fileType,
@@ -24,7 +25,7 @@ router.get('/sign-s3', function (req, res) {
     }
     const returnData = {
       signedRequest : data,
-      url : `https://${S3_BUCKET}.s3.amazonaws.com/book-covers/${fileName}`
+      url : `https://${S3_BUCKET}.s3.amazonaws.com/${bucketName}/${fileName}`
     };
     res.write(JSON.stringify(returnData));
     res.end();

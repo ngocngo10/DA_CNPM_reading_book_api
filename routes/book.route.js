@@ -3,7 +3,8 @@ const router = express.Router();
 const { 
   createBook
 } = require('../controllers/book.controller');
+const  authMiddleware = require('../middlewares/auth.middleware');
 
-router.post('/', createBook)
+router.post('/',authMiddleware.verifyToken, createBook)
 
 module.exports = router;
