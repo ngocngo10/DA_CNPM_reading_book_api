@@ -1,9 +1,7 @@
 const Book = require('../models/book.model');
 const User = require('../models/user.model');
+const Chapter = require('../models/chapter.model');
 
-// @desc    create book
-// @route   POST /api/book
-// @access  staff, user
 async function createBook(req, res,next) {
   try {
     const { bookName, authorId, category, description, coverImageURL, price } = req.body;
@@ -31,5 +29,5 @@ async function createBook(req, res,next) {
 }
 
 module.exports = {
-  createBook
+  createBook,
 }

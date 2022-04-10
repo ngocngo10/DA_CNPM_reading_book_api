@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const {
-  createBook,
-} = require('../controllers/book.controller');
+  createNewChapter,
+  detailChapter
+} = require('../controllers/chapter.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-router.post('/', createBook)
+router.post('/', createNewChapter)
+.get('/', detailChapter);
+
 module.exports = router;

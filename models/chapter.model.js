@@ -12,7 +12,7 @@ const chapterSchema = mongoose.Schema(
       type: String,
       required: true
     },
-    content: {
+    contentLink: {
       type: String,
       required: true
     },
