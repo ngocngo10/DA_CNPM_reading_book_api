@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book-Form</title>
+</head>
+
+<body>
+  <div>
+    <form action="/api/books" method="POST">
+      <input type="hidden" id="cover-image-url" name="coverImageURL">
+      <label>Book Name: </label>
+      <input type="text" name="bookName"><br><br>
+      <label>Category: </label>
+      <input type="text" name="category"><br><br>
+      <label>CoverImage</label>
+      <input type="file" name="coverImage" id="cover-image">
+      <label>Price: </label>
+      <input type="text" name="price"><br><br>
+      <label for="discription">Discription</label>
+      <input type="text" name="discription"><br><br>
+      <label>Author: </label>
+      <input type="text" name="authorId"><br><br>
+      <button type="submit">Create</button>
+    </form>
+  </div>
+  <script>
+    (() => {
+      document.getElementById("cover-image").onchange = () => {
+        const files = document.getElementById('cover-image').files;
+        const file = files[0];
+        if (file == null) {
+          return alert('No file selected.');
+        }
+        getSignedRequest(file);
+      };
+    })();
+
+    function getSignedRequest(file) {
+      const xhr = new XMLHttpRequest();
+      const bucketName="avatar";
+      xhr.open('GET', `/api/sign-s3?file-name=${file.name}&file-type=${file.type}&bucket-name=${bucketName}`);
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            uploadFile(file, response.signedRequest, response.url);
+          }
+          else {
+            alert('Could not get signed URL.');
+          }
+        }
+      };
+      xhr.send();
+    }
+
+    function uploadFile(file, signedRequest, url) {
+      const xhr = new XMLHttpRequest();
+      xhr.open('PUT', signedRequest);
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            alert(url);
+            document.getElementById('cover-image-url').value = url;
+          }
+          else {
+            console.log(xhr);
+            alert('Could not upload file.');
+          }
+        }
+      };
+      xhr.send(file);
+    }
+  </script>
+</body>
+
+</html>
