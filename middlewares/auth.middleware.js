@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const constants = require('../utils/constants')
+const createError = require('http-errors');
 
 async function verifyToken(req, res, next) {
   try {
@@ -15,4 +17,12 @@ async function verifyToken(req, res, next) {
     res.status(401).json({ message: 'Not authorized, token failed' });
   }
 }
-module.exports = { verifyToken};
+
+async function isAdmin(req, res, next) {
+  if (req.user.roles.includes(constants.ADMIN)) {
+    next();
+  } else {
+    next(createError(403));
+  }
+}
+module.exports = { verifyToken, isAdmin };

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
 const chapterSchema = mongoose.Schema(
   {
@@ -18,6 +17,9 @@ const chapterSchema = mongoose.Schema(
     },
     audioLink: {
       type: String
+    },
+    chapterNumber: {
+      type: Number
     }
   },
   {

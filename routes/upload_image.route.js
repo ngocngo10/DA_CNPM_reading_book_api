@@ -7,7 +7,7 @@ aws.config.region = 'us-east-1';
 
 router.get('/sign-s3', function (req, res) {
   const s3 = new aws.S3();
-  const fileName = req.query['file-name'];
+  const fileName = new Date().valueOf() + req.query['file-name'];
   const fileType = req.query['file-type'];
   const bucketName = req.query['bucket-name'];
   const s3Params = {

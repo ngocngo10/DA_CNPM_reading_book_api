@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const {
   createNewChapter,
-  detailChapter
+  getDetailChapter,
+  getAllChapter
 } = require('../controllers/chapter.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-router.post('/', createNewChapter)
-.get('/', detailChapter);
+router.post('/', authMiddleware.verifyToken, createNewChapter)
+.get('/', authMiddleware.verifyToken, detailChapter)
+.get('/all_chapters', authMiddleware.verifyToken);
 
 module.exports = router;
