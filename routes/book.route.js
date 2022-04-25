@@ -7,7 +7,7 @@ const {
 } = require('../controllers/book.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-router.post('/', createBook);
+router.post('/', authMiddleware.verifyToken, createBook);
 router.get('/book/:bookId', getBookDetail);
 router.get('/search', searchBook);
 

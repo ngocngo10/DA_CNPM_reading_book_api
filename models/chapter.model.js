@@ -9,7 +9,7 @@ const chapterSchema = mongoose.Schema(
     },
     title: {
       type: String,
-      required: true
+      required: true,
     },
     contentLink: {
       type: String,

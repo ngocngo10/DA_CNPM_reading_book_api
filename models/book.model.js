@@ -1,6 +1,27 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const chapterSchema = mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    contentLink: {
+      type: String,
+      required: true
+    },
+    audioLink: {
+      type: String
+    },
+    chapterNumber: {
+      type: Number
+    }
+  },
+  {
+    timestamps: true,
+  }
+)
 
 const bookSchema = new Schema({
   bookName: {
@@ -23,10 +44,7 @@ const bookSchema = new Schema({
     type: String,
     required: true
   },
-  chapters: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Chapter',
-  }],
+  chapters: [chapterSchema],
   viewNumber: {
     type: Number,
     required: true,

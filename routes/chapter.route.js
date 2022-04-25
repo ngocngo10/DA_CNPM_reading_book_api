@@ -8,7 +8,7 @@ const {
 const authMiddleware = require('../middlewares/auth.middleware');
 
 router.post('/', authMiddleware.verifyToken, createNewChapter)
-.get('/', authMiddleware.verifyToken, detailChapter)
+.get('/', authMiddleware.verifyToken, getDetailChapter)
 .get('/all_chapters', authMiddleware.verifyToken);
 
 module.exports = router;

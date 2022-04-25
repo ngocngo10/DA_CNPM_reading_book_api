@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const constants = require('../utils/constants')
 const createError = require('http-errors');
+const User = require('../models/user.model');
 
 async function verifyToken(req, res, next) {
   try {
@@ -25,4 +26,12 @@ async function isAdmin(req, res, next) {
     next(createError(403));
   }
 }
-module.exports = { verifyToken, isAdmin };
+
+async function isStaff(req, res, next) {
+  if (req.user.roles.includes(constants.STAFF)) {
+    next();
+  } else {
+    next(createError(403));
+  }
+}
+module.exports = { verifyToken, isAdmin, isStaff };

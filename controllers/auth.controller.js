@@ -12,9 +12,11 @@ async function registerUser (req, res, next) {
     if (userExists) {
       res.status(400).json({ message: 'Email already exists' });
     }
+    const avatar = process.env.DEFAULT_AVATAR;
     const user = await User.create({
       email,
       fullName,
+      avatar,
       password: bcrypt.hashSync(password, salt),
     });
     res.status(201).json({
@@ -22,6 +24,7 @@ async function registerUser (req, res, next) {
       fullName: user.fullName,
       email: user.email,
       roles: user.roles,
+      avatar: user.avatar,
       token: generateToken(user._id),
     });
   } catch (error) {

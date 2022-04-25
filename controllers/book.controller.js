@@ -1,5 +1,6 @@
 const Book = require('../models/book.model');
 const User = require('../models/user.model');
+const authMiddleware = require('../middlewares/auth.middleware');
 const createError = require('http-errors');
 const { ObjectID } = require('typeorm');
 
