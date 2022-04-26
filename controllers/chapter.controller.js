@@ -6,7 +6,7 @@ const createError = require('http-errors');
 async function createNewChapter(req, res, next) {
   try {
     const bookId = req.query.bookId;
-    const {contentLink, audioLink } = req.body;
+    const { contentLink, audioLink } = req.body;
     const existBook = await Book.findById(bookId).populate('chapters');
     if (!existBook) {
       return next(createError(404));
@@ -37,19 +37,20 @@ async function createNewChapter(req, res, next) {
 
 async function getDetailChapter(req, res, next) {
   try {
-    const  bookId = req.query.bookId;
-    const  chapterId = req.query.chapterId;
+    const bookId = req.query.bookId;
+    const chapterNumber = req.query.chapterNumber;
     const book = await Book.findById(bookId);
     if (book) {
-      const chapter = await Chapter.findById(chapterId).populate('book');
+      const chapter = book.chapters.find((chapterNumber) => chapterNumber == chapterNumber);
+      // const chapter = await Book.findById(chapterId).populate('book');
       return res.status(200).json({
         chapterId: chapter._id,
-        book: chapter.book,
+        book: book.title,
         title: chapter.title,
         content: chapter.contentLink,
         audioLink: chapter.audioLink,
         chapterNumber: chapter.chapterNumber
-      });     
+      });
     }
 
     return next(createError(404));
@@ -58,15 +59,16 @@ async function getDetailChapter(req, res, next) {
   }
 }
 
-async function getAllChapter(req, res, next) {
+async function getAllChapters(req, res, next) {
   try {
     const bookId = req.params.bookId;
     const book = await Book.findById(bookId);
     if (book) {
-      const chapters = await Chapter.find({
-        book: ObjectID(bookId)
-      }).populate('book').exec();
-      return res.status(200).json(chapters);     
+      const chapters = book.chapters;
+      // const chapters = await Book.find({
+      //   book: ObjectID(bookId)
+      // }).populate('book').exec();
+      return res.status(200).json(chapters);
     }
     return next(createError(404));
   } catch (error) {
@@ -78,5 +80,5 @@ async function getAllChapter(req, res, next) {
 module.exports = {
   createNewChapter,
   getDetailChapter,
-  getAllChapter
+  getAllChapters
 }

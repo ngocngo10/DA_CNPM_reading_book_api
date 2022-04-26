@@ -47,6 +47,7 @@ async function signIn (req, res, next) {
       fullName: user.fullName,
       email: user.email,
       roles: user.roles,
+      avatar: user.avatar,
       token: generateToken(user._id),
     });
   } catch (error) {

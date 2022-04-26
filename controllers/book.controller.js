@@ -3,11 +3,11 @@ const User = require('../models/user.model');
 const authMiddleware = require('../middlewares/auth.middleware');
 const createError = require('http-errors');
 const { ObjectID } = require('typeorm');
+const { path } = require('../app');
 
-async function createBook(req, res,next) {
+async function createBook(req, res, next) {
   try {
     const { bookName, category, description, coverImageURL, price } = req.body;
-
     const author = await User.findById(req.user._id);
     if (!author) {
       return next(createError(404));
@@ -21,20 +21,45 @@ async function createBook(req, res,next) {
       coverImageURL,
       price,
     });
+    const added_book = await Book.findById(book._id).populate({
+      path: 'category',
+      select: 'categoryName'
+    }).exec();
     res.status(201).json({
-      _id: book._id,
-      bookName: book.bookName,
-      category: book.category,
-      description: book.description,
-      coverImageURL: book.coverImageURL,
-      price: book.price
+      _id: added_book._id,
+      bookName: added_book.bookName,
+      category: added_book.category,
+      description: added_book.description,
+      coverImageURL: added_book.coverImageURL,
+      price: added_book.price
     });
   } catch (error) {
     next(error);
   }
 }
 
-async function getBookDetail(req, res,next) {
+async function getAllBooks(req, res, next) {
+  try {
+    const sort = req.query.sort == "desc" ? -1 : 1;
+    const pageSize = req.query.pageSize;
+    const page = Number(req.query.pageNumber) || 1;
+    const keyword = req.query.keyword;
+    const count = await Book.countDocuments();
+    const books = await Book.find().limit(pageSize).skip(pageSize * (page - 1))
+      .populate({
+        path: 'category',
+        select: 'categoryName'
+      }).exec();
+    if (!books) {
+      return next(createError(404));
+    }
+    return res.status(200).json({ books, page, pages: Math.ceil(count / pageSize) });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getBookById(req, res, next) {
   try {
     const bookId = req.params.bookId
     const book = await Book.findById(bookId)
@@ -42,19 +67,62 @@ async function getBookDetail(req, res,next) {
         path: 'author',
         select: '_id fullName email'
       })
-      .populate('chapters');
+      .populate('chapters')
+      .populate({
+        path: 'category',
+        select: 'categoryName'
+      }).exec();
     if (!book) {
       return next(createError(404));
     }
-    res.status(201).json(book);
+    res.status(200).json(book);
   } catch (error) {
     next(error);
   }
 }
 
-async function searchBook(req, res,next) {
+async function getBookByAuthor(req, res, next) {
   try {
-    const { bookId, authorId, category  } = req.query;
+
+    const books = await Book.find({ author: req.user._id })
+      .populate({
+        path: 'author',
+        select: '_id fullName email'
+      })
+      .populate({
+        path: 'category',
+        select: 'categoryName'
+      }).exec();
+    if (!books) {
+      return next(createError(404));
+    }
+    res.status(200).json(books);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getBooksInCategory(req, res, next) {
+  try {
+    const categoryId = req.params.categoryId;
+    const books = await Book.find({ category: categoryId })
+      .populate({
+        path: 'category',
+        select: '_id categoryName'
+      }).exec();
+    console.log(books);
+    if (!books) {
+      return next(createError(404));
+    }
+    res.status(200).json(books);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function searchBook(req, res, next) {
+  try {
+    const { bookId, authorId, category } = req.query;
     const findOpiton = {};
     if (bookId) {
       findOpiton._id = bookId;
@@ -71,7 +139,7 @@ async function searchBook(req, res,next) {
         select: '_id fullName email'
       })
       .populate('chapters')
-    res.status(201).json(books);
+    res.status(200).json(books);
   } catch (error) {
     next(error);
   }
@@ -79,6 +147,9 @@ async function searchBook(req, res,next) {
 
 module.exports = {
   createBook,
-  getBookDetail,
-  searchBook
+  getBookById,
+  getBookByAuthor,
+  searchBook,
+  getAllBooks,
+  getBooksInCategory
 }
