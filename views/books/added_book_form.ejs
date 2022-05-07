@@ -41,7 +41,7 @@
 
     function getSignedRequest(file) {
       const xhr = new XMLHttpRequest();
-      const bucketName="avatar";
+      const bucketName="book-covers";
       xhr.open('GET', `/api/sign-s3?file-name=${file.name}&file-type=${file.type}&bucket-name=${bucketName}`);
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {

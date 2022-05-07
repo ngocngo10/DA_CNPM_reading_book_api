@@ -14,6 +14,9 @@ const userSchema = new Schema({
   fullName: {
     type: String
   },
+  avatar: {
+    type: String
+  },
   roles: {
     type: [String],
     required: true,

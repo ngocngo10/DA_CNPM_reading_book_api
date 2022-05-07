@@ -4,9 +4,6 @@ const { token } = require('morgan');
 const User = require('../models/user.model');
 require('dotenv').config();
 
-// @desc    Register a new user
-// @route   POST /api/auth/sign_up
-// @access  Public
 async function registerUser (req, res, next) {
   try {
     const salt = bcrypt.genSaltSync(10);
@@ -15,9 +12,11 @@ async function registerUser (req, res, next) {
     if (userExists) {
       res.status(400).json({ message: 'Email already exists' });
     }
+    const avatar = process.env.DEFAULT_AVATAR;
     const user = await User.create({
       email,
       fullName,
+      avatar,
       password: bcrypt.hashSync(password, salt),
     });
     res.status(201).json({
@@ -25,6 +24,7 @@ async function registerUser (req, res, next) {
       fullName: user.fullName,
       email: user.email,
       roles: user.roles,
+      avatar: user.avatar,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -32,9 +32,6 @@ async function registerUser (req, res, next) {
   }
 }
 
-// @desc    Sign in function 
-// @route   POST /api/auth/sign_in
-// @access  Public
 async function signIn (req, res, next) {
   try {
     const { email, password } = req.body
@@ -50,6 +47,7 @@ async function signIn (req, res, next) {
       fullName: user.fullName,
       email: user.email,
       roles: user.roles,
+      avatar: user.avatar,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -57,9 +55,6 @@ async function signIn (req, res, next) {
   }
 }
 
-// @desc    Forgot password function 
-// @route   POST /api/auth/sign_in
-// @access  Public
 async function forgotPassword (req, res, next) {
   try {
     const { email } = req.body
