@@ -107,7 +107,8 @@ async function verifyResetPasswordCode (req, res, next) {
     await user.save();
 
     return res.status(200).json({
-      message: "Verifing reset password code is successful."
+      message: "Verifing reset password code is successful.",
+      token: generateToken(user._id),
     });
   } catch (error) {
     next(error);
