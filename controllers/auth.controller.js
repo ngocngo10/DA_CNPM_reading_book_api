@@ -1,4 +1,5 @@
 const { generateToken } = require('../utils/generateToken');
+const { resetPasswordToken } = require('../utils/resetPasswordToken');
 const bcrypt = require('bcryptjs');
 const { token } = require('morgan');
 const nodemailer = require('nodemailer');
@@ -88,7 +89,7 @@ async function forgotPassword (req, res, next) {
 
     await transporter.sendMail(mailOptions);
     return res.status(200).json({
-      message: "Please check your email to receive reset password url."
+      message: "Please check your email to receive password reset code."
     });
   } catch (error) {
     next(error);
@@ -108,7 +109,7 @@ async function verifyResetPasswordCode (req, res, next) {
 
     return res.status(200).json({
       message: "Verifing reset password code is successful.",
-      token: generateToken(user._id),
+      token: resetPasswordToken(user._id),
     });
   } catch (error) {
     next(error);
