@@ -38,6 +38,9 @@ mongoose.connect(process.env.MONGO_URI, (error) => {
 app.get('/', function(req, res) {
   res.render(__dirname + '/views/books/added_book_form.ejs');
 });
+app.get('/add_chapter', function(req, res) {
+  res.render(__dirname + '/views/books/add_chapter_string.ejs');
+});
 app.get('/create_chapter', function(req, res) {
   res.render(__dirname + '/views/books/added_chapter_form.ejs');
 });
