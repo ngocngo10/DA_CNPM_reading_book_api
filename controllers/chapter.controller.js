@@ -1,18 +1,21 @@
 const { ObjectID } = require('typeorm');
 const Book = require('../models/book.model');
-// const Chapter = require('../models/chapter.model');
 const createError = require('http-errors');
+const {getNewChapterUrl} = require('../utils/add_new_chapters');
+const axios = require('axios');
 
 async function createNewChapter(req, res, next) {
   try {
     const bookId = req.query.bookId;
-    const { contentLink, audioLink } = req.body;
+    const {title, content, audioLink } = req.body;
     const existBook = await Book.findById(bookId).populate('chapters');
+
     if (!existBook) {
       return next(createError(404));
     }
+
+    const contentLink = await getNewChapterUrl(content);
     const chapterNumber = existBook.chapters.length + 1;
-    const title = "Chương " + chapterNumber;
     const chapter = {
       title,
       contentLink,
@@ -28,7 +31,8 @@ async function createNewChapter(req, res, next) {
       title: chapter.title,
       content: chapter.contentLink,
       audioLink: chapter.audioLink,
-      chapterNumber: chapter.chapterNumber
+      chapterNumber: chapter.chapterNumber,
+      fullTitle: `Chương ${chapter.chapterNumber}: ${chapter.title}`
     });
   } catch (error) {
     next(error);
