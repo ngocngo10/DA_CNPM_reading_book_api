@@ -24,6 +24,9 @@ const userSchema = new Schema({
   },
   phoneNumber: {
     type: String
+  },
+  resetPasswordCode: {
+    type: String
   }
 }, {
   timestamps: true
