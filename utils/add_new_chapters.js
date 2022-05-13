@@ -19,7 +19,7 @@ async function getNewChapterUrl(content) {
   const data = await s3.putObject({
     ...s3Params,
     // ContentType: 'binary',
-    Body: Buffer.from(content, 'binary')
+    Body: Buffer.from(content, 'utf-8')
   }).promise();
 
   const url = `https://${S3_BUCKET}.s3.amazonaws.com/${bucketName}/${fileName}`
