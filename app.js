@@ -14,6 +14,7 @@ const bookRouter = require('./routes/book.route');
 const uploadImageRouter = require('./routes/upload_image.route');
 const chapterRouter = require('./routes/chapter.route');
 const categoryRouter = require('./routes/category.route');
+const reviewRouter = require('./routes/review.route');
 
 const users = require('./routes/users');
 
@@ -51,6 +52,7 @@ app.use('/api', uploadImageRouter);
 app.use('/api/chapters', chapterRouter);
 app.use('/api/v1/users', users);
 app.use('/api/categories', categoryRouter);
+app.use('/api/reviews', reviewRouter);
 
 app.get('/', function (req, res) {
   res.send('ok');

@@ -1,9 +1,7 @@
-const Book = require('../models/book.model');
+const { Book } = require('../models/book.model');
 const User = require('../models/user.model');
-const authMiddleware = require('../middlewares/auth.middleware');
 const createError = require('http-errors');
 const { ObjectID } = require('typeorm');
-const { path } = require('../app');
 
 async function createBook(req, res, next) {
   try {
@@ -75,6 +73,7 @@ async function getBookById(req, res, next) {
     if (!book) {
       return next(createError(404));
     }
+    book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
     res.status(200).json(book);
   } catch (error) {
     next(error);
@@ -93,8 +92,8 @@ async function getBookByAuthor(req, res, next) {
         path: 'category',
         select: 'categoryName'
       }).exec();
-    if (!books) {
-      return next(createError(404));
+    for (let book of books) {
+      book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
     }
     res.status(200).json(books);
   } catch (error) {
@@ -110,10 +109,11 @@ async function getBooksInCategory(req, res, next) {
         path: 'category',
         select: '_id categoryName'
       }).exec();
-    console.log(books);
-    if (!books) {
-      return next(createError(404));
+
+    for (let book of books) {
+      book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
     }
+
     res.status(200).json(books);
   } catch (error) {
     next(error);

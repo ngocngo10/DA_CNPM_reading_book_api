@@ -23,6 +23,29 @@ const chapterSchema = mongoose.Schema(
   }
 )
 
+const reviewSchema = mongoose.Schema (
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User',
+    },
+    comment: {
+      type: String,
+      required: [true, 'Comment field is required']
+    },
+    starNumber: {
+      type: Number,
+      require: true,
+      min: [1, 'Star Number cannot less than 1'],
+      max: [5, 'Star Number cannot more than 5']
+    }
+  },
+  {
+    timestamps: true,
+  }
+)
+
 const bookSchema = new Schema({
   bookName: {
     type: String,
@@ -51,11 +74,15 @@ const bookSchema = new Schema({
     required: true,
     default: 0
   },
-  reviews: [{
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'Review',
-  }],
+  reviews: [reviewSchema],
+  avrStarNumber: {
+    type: Number,
+    default: 0,
+  },
+  reviewTotal: {
+    type: Number,
+    default: 0,
+  },
   price: {
     type: Number,
     required: true,
@@ -80,5 +107,10 @@ const bookSchema = new Schema({
   timestamps: true
 });
 
-const Book = mongoose.model("Book", bookSchema);
-module.exports = mongoose.model.Book || mongoose.model("Book", bookSchema);
+const Book = mongoose.model.Book || mongoose.model("Book", bookSchema);
+const Review = mongoose.model("Review", reviewSchema);
+module.exports = {
+  Book,
+  Review,
+}
+

@@ -1,5 +1,5 @@
 const { ObjectID } = require('typeorm');
-const Book = require('../models/book.model');
+const {Book} = require('../models/book.model');
 const createError = require('http-errors');
 const {getNewChapterUrl} = require('../utils/add_new_chapters');
 const axios = require('axios');
