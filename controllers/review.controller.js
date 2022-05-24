@@ -1,6 +1,7 @@
 const { Book } = require('../models/book.model');
 const { Review } = require('../models/book.model');
 const { ObjectID } = require('typeorm');
+const constants = require('../utils/constants')
 
 async function createReviewBook(req, res, next) {
   try {
@@ -54,31 +55,8 @@ async function getAllReviewsInBook(req, res, next) {
   }
 }
 
-async function deleteReviewInBookByAdmin(req, res, next) {
-  const { reviewId, bookId } = req.params;
-  if (typeof req.params.bookId === null || typeof req.params.reviewId === null) {
-    return res.json({
-      status: "Error",
-      message: "Data is undefined"
-    });
-  }
-  try {
-    const book = await Book.findById(bookId)
-      .populate({
-        path: 'reviews'
-      }).exec();
-    if (book) {
-      book.reviews.pull({ _id: reviewId });
-      await book.save();
-      return res.status(200).json({ message: 'Deleted review' });
-    }
-    return next(createError(404));
-  } catch (error) {
-    next(error);
-  }
-}
 
-async function deleteReviewInBookByUser(req, res, next) {
+async function deleteReviewInBook(req, res, next) {
   const { reviewId, bookId } = req.params;
   if (typeof req.params.bookId === null || typeof req.params.reviewId === null) {
     return res.json({
@@ -95,13 +73,18 @@ async function deleteReviewInBookByUser(req, res, next) {
         }
       }).exec();
     if (book) {
-      const findedReview = book.reviews.find(item =>  item.user._id.equals(req.user._id) && item._id == reviewId);
-      console.log(findedReview);
-      if (!findedReview) return res.status(403).json({ message: 'Unauthorized delete this review' });
-      book.reviews.pull(findedReview);
-      await book.save();
-      return res.status(200).json({ message: 'Deleted review' });
-      return next(createError(404));
+      const findedReview = book.reviews.find(item => item._id == reviewId);
+      if(!findedReview) {
+        return next(createError(404));
+      }
+      if(findedReview.user._id.equals(req.user._id) || req.user.roles.includes(constants.ADMIN)) {
+        console.log(findedReview);
+        if (!findedReview) return res.status(403).json({ message: 'Unauthorized delete this review' });
+        book.reviews.pull(findedReview);
+        await book.save();
+        return res.status(200).json({ message: 'Deleted review' });
+      }
+      return res.status(403).json({message: "Unauthorized delete this review"});
     }
     return next(createError(404));
   }
@@ -113,6 +96,5 @@ async function deleteReviewInBookByUser(req, res, next) {
 module.exports = {
   createReviewBook,
   getAllReviewsInBook,
-  deleteReviewInBookByAdmin,
-  deleteReviewInBookByUser
+  deleteReviewInBook
 }
