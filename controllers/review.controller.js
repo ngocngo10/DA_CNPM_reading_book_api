@@ -31,11 +31,28 @@ async function createReviewBook(req, res, next) {
   }
 }
 
-
+async function getAllReviewsInBook(req, res, next) {
+  try {
+    const bookId = req.params.bookId;
+    const book = await Book.findById(bookId)
+      .populate({
+        path: 'reviews',
+        populate: {
+          path: 'user',
+          select: 'email fullName avatar',
+        }
+      }).exec();
+    if (book) {
+      const reviews = book.reviews;
+      return res.status(200).json(reviews);
+    }
+    return next(createError(404));
+  } catch (error) {
+    next(error);
+  }
+}
 
 module.exports = {
   createReviewBook,
   getAllReviewsInBook,
-  // getDetailChapter,
-  // getAllChapters
 }
