@@ -3,13 +3,15 @@ const router = express.Router();
 const {
   createReviewBook,
   getAllReviewsInBook,
-  deleteReviewInBookByAdmin
+  deleteReviewInBookByAdmin,
+  deleteReviewInBookByUser
 } = require('../controllers/review.controller');
 const { validateCreateReview } = require('../middlewares/validate.middleware');
-const authMiddleware = require('../middlewares/auth.middleware');
+const {verifyToken, isAdmin} = require('../middlewares/auth.middleware');
 
-router.post('/', authMiddleware.verifyToken, validateCreateReview, createReviewBook)
+router.post('/', verifyToken, validateCreateReview, createReviewBook)
 .get('/:bookId', getAllReviewsInBook)
-.delete('/:bookId/:reviewId', deleteReviewInBookByAdmin);
+.delete('/:reviewId/:bookId', verifyToken, isAdmin, deleteReviewInBookByAdmin)
+.delete('/:reviewId/book/:bookId', verifyToken, deleteReviewInBookByUser);
 
 module.exports = router;
