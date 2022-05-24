@@ -1,4 +1,5 @@
 const { Book } = require('../models/book.model');
+const { Review } = require('../models/book.model');
 
 async function createReviewBook(req, res, next) {
   try {
@@ -52,7 +53,31 @@ async function getAllReviewsInBook(req, res, next) {
   }
 }
 
+async function deleteReviewInBookByAdmin(req, res, next) {
+  const { bookId, reviewId } = req.params;
+  if (typeof req.params.bookId === null || typeof req.params.reviewId === null) {
+    return res.json({
+      status: "Error",
+      message: "Data is undefined"
+    });
+  }
+  try {
+    const book = await Book.findById(bookId)
+      .populate({
+        path: 'reviews'
+      }).exec();
+    if (book) {
+      book.reviews.pull({_id: reviewId});
+      await book.save();
+      return res.status(200).json({ message: 'Deleted review' });
+    }
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createReviewBook,
   getAllReviewsInBook,
+  deleteReviewInBookByAdmin
 }
