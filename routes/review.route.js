@@ -2,12 +2,16 @@ const express = require('express');
 const router = express.Router();
 const {
   createReviewBook,
-  getAllReviewsInBook
+  getAllReviewsInBook,
+  deleteReviewInBookByAdmin,
+  deleteReviewInBookByUser
 } = require('../controllers/review.controller');
 const { validateCreateReview } = require('../middlewares/validate.middleware');
-const authMiddleware = require('../middlewares/auth.middleware');
+const {verifyToken, isAdmin} = require('../middlewares/auth.middleware');
 
-router.post('/', authMiddleware.verifyToken, validateCreateReview, createReviewBook)
-.get('/:bookId', getAllReviewsInBook);
+router.post('/', verifyToken, validateCreateReview, createReviewBook)
+.get('/:bookId', getAllReviewsInBook)
+.delete('/:reviewId/:bookId', verifyToken, isAdmin, deleteReviewInBookByAdmin)
+.delete('/:reviewId/book/:bookId', verifyToken, deleteReviewInBookByUser);
 
 module.exports = router;
