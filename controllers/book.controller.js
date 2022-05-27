@@ -80,9 +80,44 @@ async function getBookById(req, res, next) {
   }
 }
 
+async function updateBook(req, res, next) {
+  if (typeof req.body == 'undefined' || req.params.bookId === null) {
+    return res.json({
+      status: "Error",
+      message: "Something went wrong! check your sent data"
+    });
+  }
+  try {
+    const { bookName, categoryId, description, coverImageURL, price } = req.body
+    const bookId = req.params.bookId;
+    const book = await Book.findById(bookId)
+      .populate({
+        path: 'author',
+        select: '-_id fullName'
+      })
+      .populate({
+        path: 'category',
+        select: 'categoryName'
+      }).exec();
+    if (!book) {
+      return next(createError(404));
+    }
+    console.log(book);
+    book.bookName = bookName;
+    book.category = categoryId;
+    book.description = description;
+    book.coverImageURL = coverImageURL;
+    book.price = price;
+
+    await book.save();
+    return res.json({message: "Update book successed"});
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function getBookByAuthor(req, res, next) {
   try {
-
     const books = await Book.find({ author: req.user._id })
       .populate({
         path: 'author',
@@ -148,8 +183,9 @@ async function searchBook(req, res, next) {
 module.exports = {
   createBook,
   getBookById,
+  updateBook,
   getBookByAuthor,
   searchBook,
   getAllBooks,
-  getBooksInCategory
+  getBooksInCategory,
 }
