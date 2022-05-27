@@ -80,8 +80,11 @@ async function deleteReviewInBook(req, res, next) {
       if(findedReview.user._id.equals(req.user._id) || req.user.roles.includes(constants.ADMIN)) {
         console.log(findedReview);
         if (!findedReview) return res.status(403).json({ message: 'Unauthorized delete this review' });
+        book.avrStarNumber = (book.avrStarNumber * book.reviewTotal - findedReview.starNumber) / (book.reviewTotal - 1);
+        book.reviewTotal = book.reviewTotal - 1;
         book.reviews.pull(findedReview);
         await book.save();
+        console.log(book);
         return res.status(200).json({ message: 'Deleted review' });
       }
       return res.status(403).json({message: "Unauthorized delete this review"});
