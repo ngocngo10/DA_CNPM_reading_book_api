@@ -29,7 +29,7 @@ async function createNewChapter(req, res, next) {
       _id: chapter._id,
       bookId: chapter.book,
       title: chapter.title,
-      content: chapter.contentLink,
+      contentLink: chapter.contentLink,
       audioLink: chapter.audioLink,
       chapterNumber: chapter.chapterNumber,
       fullTitle: `Chương ${chapter.chapterNumber}: ${chapter.title}`
@@ -45,7 +45,7 @@ async function getDetailChapter(req, res, next) {
     const chapterNumber = req.query.chapterNumber;
     const book = await Book.findById(bookId);
     if (book) {
-      const chapter = book.chapters.find((chapterNumber) => chapterNumber == chapterNumber);
+      const chapter = book.chapters.find((item) => item.chapterNumber == chapterNumber);
       // const chapter = await Book.findById(chapterId).populate('book');
       return res.status(200).json({
         chapterId: chapter._id,
@@ -58,6 +58,38 @@ async function getDetailChapter(req, res, next) {
     }
 
     return next(createError(404));
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateChapter(req, res, next) {
+  if (typeof req.body == 'undefined' || req.params.bookId === null) {
+    return res.json({
+      status: "Error",
+      message: "Something went wrong! Check your sent data"
+    });
+  }
+  try {
+    const { title, content, audioLink } = req.body
+    const bookId = req.params.bookId;
+    const chapterId = req.params.chapterId;
+    const book = await Book.findById(bookId)
+      .populate({
+        path: 'chapters'
+      }).exec();
+    if (!book) {
+      return next(createError(404));
+    }
+    const chapter = book.chapters.find((item) => item._id == chapterId);
+    const contentLink = await getNewChapterUrl(content);
+    chapter.title = title;
+    chapter.contentLink = contentLink;
+    chapter.audioLink = audioLink;
+
+    await book.save();
+    console.log(chapter);
+    return res.json({message: "Update chapters successed"});
   } catch (error) {
     next(error);
   }
@@ -84,5 +116,6 @@ async function getAllChapters(req, res, next) {
 module.exports = {
   createNewChapter,
   getDetailChapter,
-  getAllChapters
+  getAllChapters,
+  updateChapter
 }
