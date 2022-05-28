@@ -5,7 +5,8 @@ const constants = require('../utils/constants')
 
 async function createReviewBook(req, res, next) {
   try {
-    const { bookId, comment, starNumber } = req.body;
+    const booId = req.params.bookId;
+    const { comment, starNumber } = req.body;
     const existBook = await Book.findById(bookId).populate('reviews');
 
     if (!existBook) {
