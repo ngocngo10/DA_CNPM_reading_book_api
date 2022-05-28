@@ -6,7 +6,7 @@ const axios = require('axios');
 
 async function createNewChapter(req, res, next) {
   try {
-    const bookId = req.query.bookId;
+    const bookId = req.params.bookId;
     const {title, content, audioLink } = req.body;
     const existBook = await Book.findById(bookId).populate('chapters');
 
@@ -41,8 +41,8 @@ async function createNewChapter(req, res, next) {
 
 async function getDetailChapter(req, res, next) {
   try {
-    const bookId = req.query.bookId;
-    const chapterNumber = req.query.chapterNumber;
+    const bookId = req.params.bookId;
+    const chapterNumber = req.params.chapterNumber; 
     const book = await Book.findById(bookId);
     if (book) {
       const chapter = book.chapters.find((item) => item.chapterNumber == chapterNumber);
@@ -88,7 +88,6 @@ async function updateChapter(req, res, next) {
     chapter.audioLink = audioLink;
 
     await book.save();
-    console.log(chapter);
     return res.json({message: "Update chapters successed"});
   } catch (error) {
     next(error);
