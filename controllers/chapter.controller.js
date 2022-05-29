@@ -1,13 +1,13 @@
 const { ObjectID } = require('typeorm');
-const {Book} = require('../models/book.model');
+const { Book } = require('../models/book.model');
 const createError = require('http-errors');
-const {getNewChapterUrl} = require('../utils/add_new_chapters');
+const { getNewChapterUrl } = require('../utils/add_new_chapters');
 const axios = require('axios');
 
 async function createNewChapter(req, res, next) {
   try {
     const bookId = req.params.bookId;
-    const {title, content, audioLink } = req.body;
+    const { title, content, audioLink } = req.body;
     const existBook = await Book.findById(bookId).populate('chapters');
 
     if (!existBook) {
@@ -42,7 +42,7 @@ async function createNewChapter(req, res, next) {
 async function getDetailChapter(req, res, next) {
   try {
     const bookId = req.params.bookId;
-    const chapterNumber = req.params.chapterNumber; 
+    const chapterNumber = req.params.chapterNumber;
     const book = await Book.findById(bookId);
     if (book) {
       const chapter = book.chapters.find((item) => item.chapterNumber == chapterNumber);
@@ -88,11 +88,43 @@ async function updateChapter(req, res, next) {
     chapter.audioLink = audioLink;
 
     await book.save();
-    return res.json({message: "Update chapters successed"});
+    return res.json({ message: "Update chapters successed" });
   } catch (error) {
     next(error);
   }
 }
+
+async function deleteChapterInBook(req, res, next) {
+  const { bookId, chapterId } = req.params;
+  try {
+    const book = await Book.findOne({ _id: bookId, author: req.user })
+      .populate({
+        path: 'chapters'
+      })
+      .populate({
+        path: 'author'
+      }).exec();
+    if (book) {
+      const findedchapter = book.chapters.find(item => item._id == chapterId);
+      if (!findedchapter) {
+        return next(createError(404));
+      }
+      
+      for (let chapter of book.chapters) {
+        if(chapter.chapterNumber > findedchapter.chapterNumber)
+        chapter.chapterNumber = chapter.chapterNumber -1 ;
+      }
+      book.chapters.pull(findedchapter);
+      await book.save();
+      return res.status(200).json({ message: 'Deleted chapter' });
+    }
+    return res.status(403).json({ message: "Unauthorize delete this chapter" });
+  }
+  catch (error) {
+    next(error);
+  }
+}
+
 
 async function getAllChapters(req, res, next) {
   try {
@@ -116,5 +148,6 @@ module.exports = {
   createNewChapter,
   getDetailChapter,
   getAllChapters,
+  deleteChapterInBook,
   updateChapter
 }
