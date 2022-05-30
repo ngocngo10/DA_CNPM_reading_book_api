@@ -110,8 +110,30 @@ async function updateBook(req, res, next) {
     book.price = price;
 
     await book.save();
-    return res.json({message: "Update book successed"});
+    return res.json({ message: "Update book successed" });
   } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteBook(req, res, next) {
+  const bookId = req.params.bookId;
+  try {
+    const book = await Book.findById(bookId)
+    .populate({
+      path: 'author',
+    }).exec();
+    if (book) {
+      console.log(book.author._id, req.user._id);
+      if (book.author._id.equals(req.user._id)) {
+        await book.remove();
+        return res.status(200).json({ message: 'Deleted book' });
+      }
+      return res.status(403).json({ message: 'Unauthorize delete this book' });
+    }
+    return next(createError(404));
+  }
+  catch (error) {
     next(error);
   }
 }
@@ -188,4 +210,5 @@ module.exports = {
   searchBook,
   getAllBooks,
   getBooksInCategory,
+  deleteBook
 }

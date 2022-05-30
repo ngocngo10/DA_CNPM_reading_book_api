@@ -8,6 +8,7 @@ const {
   getAllBooks,
   getBooksInCategory,
   getBookByAuthor,
+  deleteBook
 } = require('../controllers/book.controller');
 
 const {
@@ -15,7 +16,7 @@ const {
   getDetailChapter,
   getAllChapters,
   updateChapter,
-  deleteChapterInBook
+  deleteChapterInBook,
 } = require('../controllers/chapter.controller');
 
 const {
@@ -33,7 +34,8 @@ router.post('/', verifyToken, createBook)
   .get('/book/:bookId', getBookById)
   .put('/book/:bookId', verifyToken, updateBook)
   .get('/author', verifyToken, getBookByAuthor)
-  .get('/search', searchBook);
+  .get('/search', searchBook)
+  .delete('/book/:bookId', verifyToken, deleteBook);
 
 router.post('/:bookId/chapters', verifyToken, createNewChapter) 
   .get('/:bookId/chapters/:chapterNumber', getDetailChapter)
