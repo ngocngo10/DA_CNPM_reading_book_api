@@ -14,7 +14,8 @@ const {
   createNewChapter,
   getDetailChapter,
   getAllChapters,
-  updateChapter
+  updateChapter,
+  deleteChapterInBook
 } = require('../controllers/chapter.controller');
 
 const {
@@ -37,7 +38,8 @@ router.post('/', verifyToken, createBook)
 router.post('/:bookId/chapters', verifyToken, createNewChapter) 
   .get('/:bookId/chapters/:chapterNumber', getDetailChapter)
   .put('/:bookId/chapters/:chapterId', verifyToken, updateChapter)
-  .get('/:bookId/chapters', getAllChapters);
+  .get('/:bookId/chapters', getAllChapters)
+  .delete('/:bookId/chapters/:chapterId', verifyToken, deleteChapterInBook);
 
 router.post('/:bookId/reviews', verifyToken, validateCreateReview, createReviewBook)
   .get('/:bookId/reviews', getAllReviewsInBook)
