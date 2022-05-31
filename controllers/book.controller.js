@@ -41,12 +41,23 @@ async function getAllBooks(req, res, next) {
     const sort = req.query.sort == "desc" ? -1 : 1;
     const pageSize = req.query.pageSize;
     const page = Number(req.query.pageNumber) || 1;
-    const keyword = req.query.keyword;
-    const count = await Book.countDocuments();
-    const books = await Book.find().limit(pageSize).skip(pageSize * (page - 1))
+    const keyword = req.query.keyword
+      ? {
+        bookName: {
+          $regex: req.query.keyword,
+          $options: 'i',
+        },
+      }
+      : {}
+    const count = await Book.countDocuments({ ...keyword });
+    const books = await Book.find({ ...keyword }).limit(pageSize).skip(pageSize * (page - 1))
       .populate({
         path: 'category',
         select: 'categoryName'
+      })
+      .populate({
+        path: 'author',
+        select: 'fullName'
       }).exec();
     if (!books) {
       return next(createError(404));
@@ -120,9 +131,9 @@ async function deleteBook(req, res, next) {
   const bookId = req.params.bookId;
   try {
     const book = await Book.findById(bookId)
-    .populate({
-      path: 'author',
-    }).exec();
+      .populate({
+        path: 'author',
+      }).exec();
     if (book) {
       console.log(book.author._id, req.user._id);
       if (book.author._id.equals(req.user._id)) {
