@@ -1,42 +1,32 @@
-
-const { generateToken } = require('../utils/generateToken');
-const bcrypt = require('bcryptjs');
-const { token } = require('morgan');
 const User = require('../models/user.model');
-require('dotenv').config();
 
-// @desc    Register a new user
-// @route   POST /api/users
-// @access  Public
-async function registerUser(req, res, next) {
-  const salt = bcrypt.genSaltSync(10);
-  const { fullName, email, password } = req.body
-
-  const userExists = await User.findOne({ email })
-
-  if (userExists) {
-    res.status(400).json({ message: 'User already exists' });
+async function getUserProfile(req, res, next) {
+  const userId = req.user._id;
+  try {
+    const user = await User.findById(userId).select('-password -resetPasswordCode -roles -phoneNumber').exec();
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    next(error)
   }
+}
 
-  const user = await User.create({
-    email,
-    fullName,
-    password: bcrypt.hashSync(password, salt),
-  })
-
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      role : user.roles,
-      token: generateToken(user._id),
-    })
-  } else {
-    res.status(400).json({ message: 'Invalid user data' });
+async function updateUserProfile(req, res, next) {
+  const userId = req.user._id;
+  const { fullName, avatar } = req.body;
+  try {
+    const user = await User.findById(userId).select('-password -resetPasswordCode -phoneNumber').exec();
+    user.fullName = fullName;
+    user.avatar = avatar;
+    await user.save();
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    next(error)
   }
 }
 
 module.exports = {
-  registerUser
+  getUserProfile,
+  updateUserProfile
 }
