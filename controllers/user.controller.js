@@ -1,4 +1,5 @@
 const User = require('../models/user.model');
+const bcrypt = require('bcryptjs');
 
 async function getUserProfile(req, res, next) {
   const userId = req.user._id;
@@ -26,7 +27,26 @@ async function updateUserProfile(req, res, next) {
   }
 }
 
+async function updatePassword(req, res, next) {
+  const userId = req.user._id;
+  const { oldPassword, newPassword } = req.body;
+  try {
+    const user = await User.findById(userId);
+    if (!bcrypt.compareSync(oldPassword, user.password)) {
+      return res.status(404).json({ message: 'Old password is wrong.' });
+    }
+    const salt = bcrypt.genSaltSync(10);
+    user.password = bcrypt.hashSync(newPassword, salt);
+    await user.save();
+    res.status(200).json({message: "Password has been updated."});
+  } catch (error) {
+    console.error(error);
+    next(error)
+  }
+}
+
 module.exports = {
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  updatePassword
 }
