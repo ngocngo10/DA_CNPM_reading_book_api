@@ -26,10 +26,53 @@ async function createNotification(bookId, chapter) {
   }
 }
 
+async function getNotifications(req, res, next) {
+  try {
+    const notifications = await Notification.find()
+      .populate({
+        path: 'user',
+        select: 'fullName',
+        // match: {
+        //   _id: req.user._id
+        // }
+      })
+      .populate({
+        path: 'book',
+        select: 'bookName'
+      }).exec();
+    return res.json(notifications);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// async function readAllNotifications(req, res, next) {
+//   try {
+//     await Notification.update({ user: req.user._id }, { "$set": { "isSeen": true } });
+//     return res.status(200).json({
+//       message: "You have seen all notifications."
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// }
+
+// async function readNotification(req, res, next) {
+//   try {
+//     const notification = await Notification.findById(req.body.notificationId);
+//     notification.isSeen = true;
+//     await notification.save()
+//     return res.status(200).json({
+//       message: "You have seen this notification."
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// }
 
 module.exports = {
   // readAllNotifications,
   createNotification,
   // readNotification,
-  // getNotifications,
+  getNotifications,
 }
