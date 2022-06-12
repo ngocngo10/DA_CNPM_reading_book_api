@@ -57,22 +57,22 @@ async function readAllNotifications(req, res, next) {
   }
 }
 
-// async function readNotification(req, res, next) {
-//   try {
-//     const notification = await Notification.findById(req.body.notificationId);
-//     notification.isSeen = true;
-//     await notification.save()
-//     return res.status(200).json({
-//       message: "You have seen this notification."
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// }
+async function readNotification(req, res, next) {
+  try {
+    const notification = await Notification.findById(req.body.notificationId);
+    notification.isSeen = true;
+    await notification.save()
+    return res.status(200).json({
+      message: "You have seen this notification."
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 module.exports = {
   readAllNotifications,
   createNotification,
-  // readNotification,
+  readNotification,
   getNotifications,
 }
