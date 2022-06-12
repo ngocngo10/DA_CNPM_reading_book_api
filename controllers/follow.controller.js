@@ -30,7 +30,29 @@ async function followBook(req, res, next) {
   }
 }
 
+async function unfollowBook(req, res, next) {
+  try {
+    const { bookId } = req.params;
+    const follow = await Follow.findOne({
+      user: req.user._id,
+      book: bookId,
+    });
+    if (!follow) {
+      return res.status(400).json({ message: 'book is not followed.'})
+    }
+    const book = await Book.findById(bookId);
+    await book.follows.pull(follow._id);
+    await follow.remove();
+    book.followTotal = book.followTotal - 1;
+    await book.save();
+    res.status(200).json({ message: 'unfollowed' })
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+}
+
 module.exports = {
-  // unfollowBook,
+  unfollowBook,
   followBook,
 }
