@@ -12,6 +12,8 @@ const bookRouter = require('./routes/book.route');
 const uploadImageRouter = require('./routes/upload_image.route');
 const categoryRouter = require('./routes/category.route');
 const userRouter = require('./routes/user.route');
+const followRouter = require('./routes/follow.route');
+const notificationRouter = require('./routes/notification.route');
 
 const app = express();
 
@@ -36,6 +38,8 @@ app.use('/api/books', bookRouter);
 app.use('/api', uploadImageRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/users', userRouter);
+app.use('/api', followRouter);
+app.use('/api/notifications', notificationRouter);
 
 app.get('/', function (req, res) {
   res.send('ok');
