@@ -46,16 +46,16 @@ async function getNotifications(req, res, next) {
   }
 }
 
-// async function readAllNotifications(req, res, next) {
-//   try {
-//     await Notification.update({ user: req.user._id }, { "$set": { "isSeen": true } });
-//     return res.status(200).json({
-//       message: "You have seen all notifications."
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// }
+async function readAllNotifications(req, res, next) {
+  try {
+    await Notification.update({ user: req.user._id }, { "$set": { "isSeen": true } });
+    return res.status(200).json({
+      message: "You have seen all notifications."
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 // async function readNotification(req, res, next) {
 //   try {
@@ -71,7 +71,7 @@ async function getNotifications(req, res, next) {
 // }
 
 module.exports = {
-  // readAllNotifications,
+  readAllNotifications,
   createNotification,
   // readNotification,
   getNotifications,
