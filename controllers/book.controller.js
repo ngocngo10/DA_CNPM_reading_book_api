@@ -51,8 +51,11 @@ async function getAllBooks(req, res, next) {
       }
       : {}
     const count = await Book.countDocuments({ ...keyword });
-    const [follows, books] = await Promise.all([
-      Follow.find({ user: req.user._id }),
+    let follows;
+    if (req.user) {
+      follows = await Follow.find({ user: req.user._id });
+    }
+    const books = await
       Book.find({ ...keyword }).limit(pageSize).skip(pageSize * (page - 1))
         .populate({
           path: 'category',
@@ -61,19 +64,21 @@ async function getAllBooks(req, res, next) {
         .populate({
           path: 'author',
           select: 'fullName'
-        }).exec()
-    ])
+        }).exec();
     if (!books) {
       return next(createError(404));
     }
-    const result = books.map(book => {
-      const followedCheck = follows.some(element => element._id.equals(book._id));
-      return {
-        ...book.toObject(),
-        isFollowed: followedCheck
-      }
-    })
-    return res.status(200).json({ result, page, pages: Math.ceil(count / pageSize) });
+    if (req.user) {
+      const result = books.map(book => {
+        const followedCheck = follows.some(element => element._id.equals(book._id));
+        return {
+          ...book.toObject(),
+          isFollowed: followedCheck
+        }
+      })
+      return res.status(200).json({ result, page, pages: Math.ceil(count / pageSize) });
+    }
+    return res.status(200).json(books);
   } catch (error) {
     next(error);
   }
@@ -81,31 +86,36 @@ async function getAllBooks(req, res, next) {
 
 async function getBookById(req, res, next) {
   try {
-    const bookId = req.params.bookId
-    const [follow, book] = await Promise.all([
-      Follow.findOne({
+    const bookId = req.params.bookId;
+    let follow;
+    if (req.user) {
+      follow = await Follow.findOne({
         user: req.user._id,
         book: book._id
-      }),
-      Book.findById(bookId)
-        .populate({
-          path: 'author',
-          select: '_id fullName email'
-        })
-        .populate('chapters')
-        .populate({
-          path: 'category',
-          select: 'categoryName'
-        }).exec()
-    ]);
+      });
+    }
+    const book = await Book.findById(bookId)
+      .populate({
+        path: 'author',
+        select: '_id fullName email'
+      })
+      .populate('chapters')
+      .populate({
+        path: 'category',
+        select: 'categoryName'
+      }).exec();
     if (!book) {
       return next(createError(404));
     }
     book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
-    res.status(200).json({
-      ...book.toObject(),
-      isFollowed: !!follow,
-    });
+
+    if (eq.user) {
+      return res.status(200).json({
+        ...book.toObject(),
+        isFollowed: !!follow,
+      });
+    }
+    return res.status(200).json(book);
   } catch (error) {
     next(error);
   }
@@ -171,27 +181,31 @@ async function deleteBook(req, res, next) {
 
 async function getBookByAuthor(req, res, next) {
   try {
-    const [follows, books] = await Promise.all([
-      Follow.find({ user: req.user._id }),
-      Book.find({ author: req.user._id })
-        .populate({
-          path: 'author',
-          select: '_id fullName email'
-        })
-        .populate({
-          path: 'category',
-          select: 'categoryName'
-        }).exec()
-    ])
-    const result = books.map(book => {
-      return {
-        ...book.toObject(),
-        avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
-        isFollowed: follows.some(element => element._id.equals(book._id))
-      }
-    });
+    let follows;
+    if (req.user) {
+      follows = await Follow.find({ user: req.user._id })
+    }
+    const books = await Book.find({ author: req.user._id })
+      .populate({
+        path: 'author',
+        select: '_id fullName email'
+      })
+      .populate({
+        path: 'category',
+        select: 'categoryName'
+      }).exec();
+    if (req.user) {
+      const result = books.map(book => {
+        return {
+          ...book.toObject(),
+          avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+          isFollowed: follows.some(element => element._id.equals(book._id))
+        }
+      });
 
-    res.status(200).json(result);
+      res.status(200).json(result);
+    }
+
   } catch (error) {
     next(error);
   }
@@ -200,20 +214,29 @@ async function getBookByAuthor(req, res, next) {
 async function getBooksInCategory(req, res, next) {
   try {
     const categoryId = req.params.categoryId;
-    const [follows, books] = await Promise.all([
-      Follow.find({ user: req.user._id }),
-      Book.find({ category: categoryId })
-        .populate({
-          path: 'category',
-          select: '_id categoryName'
-        }).exec()
-    ]);
+    const books = await Book.find({ category: categoryId })
+      .populate({
+        path: 'category',
+        select: '_id categoryName'
+      }).exec()
+    let follows;
+    if (req.user) {
+      follows = await Follow.find({ user: req.user._id });
+      const result = books.map(book => {
+        return {
+          ...book.toObject(),
+          avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+          isFollowed: follows.some(element => element._id.equals(book._id))
+        }
+      });
+
+      return res.status(200).json(result);
+    }
 
     const result = books.map(book => {
       return {
         ...book.toObject(),
         avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
-        isFollowed: follows.some(element => element._id.equals(book._id))
       }
     });
 
@@ -236,24 +259,32 @@ async function searchBook(req, res, next) {
     if (category) {
       findOpiton.category = { $regex: '.*' + category + '.*' };
     }
-    const [follows, books] = await Promise.all([
-      Follow.find({ user: req.user._id }),
-      Book.find(findOpiton)
-        .populate({
-          path: 'author',
-          select: '_id fullName email'
-        })
-        .populate('chapters')
-    ])
+    const books = await Book.find(findOpiton)
+      .populate({
+        path: 'author',
+        select: '_id fullName email'
+      })
+      .populate('chapters')
 
+    if (req.user) {
+      const follows = await Follow.find({ user: req.user._id });
+      const result = books.map(book => {
+        return {
+          ...book.toObject(),
+          avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+          isFollowed: follows.some(element => element._id.equals(book._id))
+        }
+      });
+      return res.status(200).json(result);
+    }
     const result = books.map(book => {
       return {
         ...book.toObject(),
         avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
-        isFollowed: follows.some(element => element._id.equals(book._id))
       }
     });
-    res.status(200).json(result);
+
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }
