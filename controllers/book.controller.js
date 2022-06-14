@@ -70,7 +70,7 @@ async function getAllBooks(req, res, next) {
     }
     if (req.user) {
       const result = books.map(book => {
-        const followedCheck = follows.some(element => element._id.equals(book._id));
+        const followedCheck = follows.some(element => element.book._id.equals(book._id));
         return {
           ...book.toObject(),
           isFollowed: followedCheck
@@ -91,7 +91,7 @@ async function getBookById(req, res, next) {
     if (req.user) {
       follow = await Follow.findOne({
         user: req.user._id,
-        book: book._id
+        book: bookId
       });
     }
     const book = await Book.findById(bookId)
@@ -225,7 +225,7 @@ async function getBooksInCategory(req, res, next) {
         return {
           ...book.toObject(),
           avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
-          isFollowed: follows.some(element => element._id.equals(book._id))
+          isFollowed: follows.some(element => element.book._id.equals(book._id))
         }
       });
 
@@ -283,6 +283,26 @@ async function searchBook(req, res, next) {
       }
     });
 
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getFollowedBooks(req, res, next) {
+  try {
+    const follows = await Follow.find({ user: req.user._id })
+      .populate({
+        path: 'book',
+      });
+    const books = follows.map(item => item.book); 
+    console.log(books);
+    const result = books.map(book => {
+      return {
+        ...book.toObject(),
+        avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+      }
+    });
     return res.status(200).json(result);
   } catch (error) {
     next(error);

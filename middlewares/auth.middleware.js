@@ -19,12 +19,12 @@ async function verifyToken(req, res, next) {
 }
 
 async function ignoreVerifyToken(req, res, next) {
-  try {
-    const token = req.headers.authorization.replace('Bearer ', '');
-    if (!token) {
-      req.user = null;
+  try {  
+    if (!req.headers.authorization) {
+     req.user = null;
       return next();
     }
+    const token = req.headers.authorization.replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id).select('-password');
     next();
