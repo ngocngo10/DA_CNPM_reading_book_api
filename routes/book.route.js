@@ -26,15 +26,15 @@ const {
 } = require('../controllers/review.controller');
 
 const { validateCreateReview } = require('../middlewares/validate.middleware');
-const { verifyToken, isAdmin } = require('../middlewares/auth.middleware');
+const { verifyToken, isAdmin, ignoreVerifyToken } = require('../middlewares/auth.middleware');
 
 router.post('/', verifyToken, createBook)
-  .get('/', getAllBooks)
-  .get('/category/:categoryId', getBooksInCategory)
-  .get('/book/:bookId', getBookById)
+  .get('/', ignoreVerifyToken, getAllBooks)
+  .get('/category/:categoryId', ignoreVerifyToken, getBooksInCategory)
+  .get('/book/:bookId', ignoreVerifyToken, getBookById)
   .put('/book/:bookId', verifyToken, updateBook)
   .get('/author', verifyToken, getBookByAuthor)
-  .get('/search', searchBook)
+  .get('/search', ignoreVerifyToken, searchBook)
   .delete('/book/:bookId', verifyToken, deleteBook);
 
 router.post('/:bookId/chapters', verifyToken, createNewChapter) 
