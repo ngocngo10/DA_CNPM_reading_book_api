@@ -284,29 +284,6 @@ async function searchBook(req, res, next) {
     });
 
     return res.status(200).json(result);
-<<<<<<< HEAD
-=======
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function getFollowedBooks(req, res, next) {
-  try {
-    const books = await Book.find().populate({
-      path: 'follows',
-      match: {
-        user: req.user._id
-      }
-    }).exec()
-    const result = books.map(book => {
-      return {
-        ...book.toObject(),
-        avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
-      }
-    });
-    return res.status(200).json(result);
->>>>>>> 5daedc0fc47f6abffceb868a0f66988e7472604f
   } catch (error) {
     next(error);
   }
