@@ -290,6 +290,26 @@ async function searchBook(req, res, next) {
   }
 }
 
+async function getFollowedBooks(req, res, next) {
+  try {
+    const books = await Book.find().populate({
+      path: 'follows',
+      match: {
+        user: req.user._id
+      }
+    }).exec()
+    const result = books.map(book => {
+      return {
+        ...book.toObject(),
+        avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+      }
+    });
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createBook,
   getBookById,
@@ -298,5 +318,6 @@ module.exports = {
   searchBook,
   getAllBooks,
   getBooksInCategory,
-  deleteBook
+  deleteBook,
+  getFollowedBooks
 }
