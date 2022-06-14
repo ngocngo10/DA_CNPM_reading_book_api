@@ -109,7 +109,7 @@ async function getBookById(req, res, next) {
     }
     book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
 
-    if (eq.user) {
+    if (req.user) {
       return res.status(200).json({
         ...book.toObject(),
         isFollowed: !!follow,
