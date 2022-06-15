@@ -18,6 +18,22 @@ async function verifyToken(req, res, next) {
   }
 }
 
+async function ignoreVerifyToken(req, res, next) {
+  try {  
+    if (!req.headers.authorization) {
+     req.user = null;
+      return next();
+    }
+    const token = req.headers.authorization.replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id).select('-password');
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: 'Not authorized, token failed' });
+  }
+}
+
 async function isAdmin(req, res, next) {
   if (req.user.roles.includes(constants.ADMIN)) {
     next();
@@ -33,4 +49,10 @@ async function isStaff(req, res, next) {
     next(createError(403));
   }
 }
-module.exports = { verifyToken, isAdmin, isStaff };
+
+module.exports = {
+  verifyToken,
+  isAdmin,
+  isStaff,
+  ignoreVerifyToken
+};
