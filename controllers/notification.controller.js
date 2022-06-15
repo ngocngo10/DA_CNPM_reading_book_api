@@ -28,14 +28,14 @@ async function createNotification(bookId, chapter) {
 
 async function getNotifications(req, res, next) {
   try {
-    const notifications = await Notification.find()
-      .populate({
-        path: 'user',
-        select: 'fullName',
-        // match: {
-        //   _id: req.user._id
-        // }
-      })
+    const notifications = await Notification.find({user: req.user._id})
+      // .populate({
+      //   path: 'user',
+      //   select: 'fullName',
+      //   // match: {
+      //   //   _id: req.user._id
+      //   // }
+      // })
       .populate({
         path: 'book',
         select: 'bookName'
