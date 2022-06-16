@@ -16,6 +16,6 @@ router.post('/sign_up', registerUser)
   .post('/forgot_password', forgotPassword)
   .post('/verify_reset_password_code', verifyResetPasswordCode )
   .patch('/reset_password', authMiddleware.verifyToken, resetPassword)
-  // .post('/refreshToken', refreshToken);
+  .post('/refreshToken', refreshToken);
 
 module.exports = router;

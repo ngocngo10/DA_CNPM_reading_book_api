@@ -143,33 +143,33 @@ async function resetPassword (req, res, next) {
   }
 }
 
-// async function refreshToken(req, res, next) {
-//   const token = req.body.refreshToken.replace('Bearer ', '');
-//   if (!token) {
-//     res.status(400).json({ message: 'no refresh token' });
-//   }
-//   let user;
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-//     user = await User.findById(decoded.id).select('-password');
-//     if (!user) return res.status(400).json({ message: 'Invalid refresh token' });
-//   } catch (error) {
-//     console.log(error);
-//     if (error.name === 'TokenExpiredError') {
-//       return res.status(400).json({
-//         message: 'Refresh token is expired.'
-//       });
-//     } else {
-//       return res.status(400).json({
-//         message: 'Refresh token is invalid.'
-//       });
-//     }
-//   }
-//   const newToken = generateToken(user._id);
-//   return res.status(200).json({
-//     token: newToken,
-//   });
-// }
+async function refreshToken(req, res, next) {
+  const token = req.body.refreshToken.replace('Bearer ', '');
+  if (!token) {
+    res.status(400).json({ message: 'no refresh token' });
+  }
+  let user;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    user = await User.findById(decoded.id).select('-password');
+    if (!user) return res.status(400).json({ message: 'Invalid refresh token' });
+  } catch (error) {
+    console.log(error);
+    if (error.name === 'TokenExpiredError') {
+      return res.status(400).json({
+        message: 'Refresh token is expired.'
+      });
+    } else {
+      return res.status(400).json({
+        message: 'Refresh token is invalid.'
+      });
+    }
+  }
+  const newToken = generateToken(user._id);
+  return res.status(200).json({
+    token: newToken,
+  });
+}
 
 module.exports = {
   registerUser,
@@ -177,5 +177,5 @@ module.exports = {
   forgotPassword,
   verifyResetPasswordCode,
   resetPassword,
-  // refreshToken
+  refreshToken
 }
