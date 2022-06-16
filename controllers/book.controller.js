@@ -178,6 +178,22 @@ async function deleteBook(req, res, next) {
   }
 }
 
+async function updateViewNumberBook(req, res, next) {
+  try {
+    const bookId = req.params.bookId;
+    const book = await Book.findById(bookId)
+    if (!book) {
+      return next(createError(404));
+    }
+    book.viewNumber += 1;
+    await book.save();
+
+    return res.json({ message: "Updated book view number." });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function getBookByAuthor(req, res, next) {
   try {
     let follows;
@@ -318,5 +334,6 @@ module.exports = {
   getAllBooks,
   getBooksInCategory,
   deleteBook,
+  updateViewNumberBook,
   getFollowedBooks
 }
