@@ -40,6 +40,7 @@ async function createBook(req, res, next) {
 async function getAllBooks(req, res, next) {
   try {
     const sort = req.query.sort == "desc" ? -1 : 1;
+    const typeSort = req.query.typeSort;
     const pageSize = req.query.pageSize;
     const page = Number(req.query.pageNumber) || 1;
     const keyword = req.query.keyword
@@ -55,8 +56,10 @@ async function getAllBooks(req, res, next) {
     if (req.user) {
       follows = await Follow.find({ user: req.user._id });
     }
+    const sortItem = {};
+    sortItem[typeSort] = sort;
     const books = await
-      Book.find({ ...keyword }).limit(pageSize).skip(pageSize * (page - 1))
+      Book.find({ ...keyword }).limit(pageSize).sort(sortItem).skip(pageSize * (page - 1))
         .populate({
           path: 'category',
           select: 'categoryName'
