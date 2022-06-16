@@ -1,4 +1,5 @@
 const { Book } = require('../models/book.model');
+const Follow = require('../models/follow.model');
 const User = require('../models/user.model');
 const createError = require('http-errors');
 const { ObjectID } = require('typeorm');
@@ -50,19 +51,34 @@ async function getAllBooks(req, res, next) {
       }
       : {}
     const count = await Book.countDocuments({ ...keyword });
-    const books = await Book.find({ ...keyword }).limit(pageSize).skip(pageSize * (page - 1))
-      .populate({
-        path: 'category',
-        select: 'categoryName'
-      })
-      .populate({
-        path: 'author',
-        select: 'fullName'
-      }).exec();
+    let follows;
+    if (req.user) {
+      follows = await Follow.find({ user: req.user._id });
+    }
+    const books = await
+      Book.find({ ...keyword }).limit(pageSize).skip(pageSize * (page - 1))
+        .populate({
+          path: 'category',
+          select: 'categoryName'
+        })
+        .populate({
+          path: 'author',
+          select: 'fullName'
+        }).exec();
     if (!books) {
       return next(createError(404));
     }
-    return res.status(200).json({ books, page, pages: Math.ceil(count / pageSize) });
+    if (req.user) {
+      const result = books.map(book => {
+        const followedCheck = follows.some(element => element.book._id.equals(book._id));
+        return {
+          ...book.toObject(),
+          isFollowed: followedCheck
+        }
+      })
+      return res.status(200).json({ result, page, pages: Math.ceil(count / pageSize) });
+    }
+    return res.status(200).json(books);
   } catch (error) {
     next(error);
   }
@@ -70,13 +86,19 @@ async function getAllBooks(req, res, next) {
 
 async function getBookById(req, res, next) {
   try {
-    const bookId = req.params.bookId
+    const bookId = req.params.bookId;
+    let follow;
+    if (req.user) {
+      follow = await Follow.findOne({
+        user: req.user._id,
+        book: bookId
+      });
+    }
     const book = await Book.findById(bookId)
       .populate({
         path: 'author',
         select: '_id fullName email'
       })
-      .populate('chapters')
       .populate({
         path: 'category',
         select: 'categoryName'
@@ -85,7 +107,14 @@ async function getBookById(req, res, next) {
       return next(createError(404));
     }
     book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
-    res.status(200).json(book);
+
+    if (req.user) {
+      return res.status(200).json({
+        ...book.toObject(),
+        isFollowed: !!follow,
+      });
+    }
+    return res.status(200).json(book);
   } catch (error) {
     next(error);
   }
@@ -151,6 +180,10 @@ async function deleteBook(req, res, next) {
 
 async function getBookByAuthor(req, res, next) {
   try {
+    let follows;
+    if (req.user) {
+      follows = await Follow.find({ user: req.user._id })
+    }
     const books = await Book.find({ author: req.user._id })
       .populate({
         path: 'author',
@@ -160,10 +193,18 @@ async function getBookByAuthor(req, res, next) {
         path: 'category',
         select: 'categoryName'
       }).exec();
-    for (let book of books) {
-      book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
+    if (req.user) {
+      const result = books.map(book => {
+        return {
+          ...book.toObject(),
+          avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+          isFollowed: follows.some(element => element._id.equals(book._id))
+        }
+      });
+
+      res.status(200).json(result);
     }
-    res.status(200).json(books);
+
   } catch (error) {
     next(error);
   }
@@ -176,13 +217,29 @@ async function getBooksInCategory(req, res, next) {
       .populate({
         path: 'category',
         select: '_id categoryName'
-      }).exec();
+      }).exec()
+    let follows;
+    if (req.user) {
+      follows = await Follow.find({ user: req.user._id });
+      const result = books.map(book => {
+        return {
+          ...book.toObject(),
+          avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+          isFollowed: follows.some(element => element.book._id.equals(book._id))
+        }
+      });
 
-    for (let book of books) {
-      book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
+      return res.status(200).json(result);
     }
 
-    res.status(200).json(books);
+    const result = books.map(book => {
+      return {
+        ...book.toObject(),
+        avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+      }
+    });
+
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
@@ -207,7 +264,46 @@ async function searchBook(req, res, next) {
         select: '_id fullName email'
       })
       .populate('chapters')
-    res.status(200).json(books);
+
+    if (req.user) {
+      const follows = await Follow.find({ user: req.user._id });
+      const result = books.map(book => {
+        return {
+          ...book.toObject(),
+          avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+          isFollowed: follows.some(element => element._id.equals(book._id))
+        }
+      });
+      return res.status(200).json(result);
+    }
+    const result = books.map(book => {
+      return {
+        ...book.toObject(),
+        avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+      }
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getFollowedBooks(req, res, next) {
+  try {
+    const follows = await Follow.find({ user: req.user._id })
+      .populate({
+        path: 'book',
+      });
+    const books = follows.map(item => item.book); 
+    console.log(books);
+    const result = books.map(book => {
+      return {
+        ...book.toObject(),
+        avrStarNumber: Math.round(book.avrStarNumber * 100) / 100,
+      }
+    });
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }
@@ -221,5 +317,6 @@ module.exports = {
   searchBook,
   getAllBooks,
   getBooksInCategory,
-  deleteBook
+  deleteBook,
+  getFollowedBooks
 }

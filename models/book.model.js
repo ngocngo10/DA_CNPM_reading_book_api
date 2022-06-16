@@ -56,6 +56,11 @@ const bookSchema = new Schema({
     required: true,
     ref: 'User',
   },
+  follows: [{
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'Follow',
+  }],
   category:  {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -83,6 +88,10 @@ const bookSchema = new Schema({
     type: Number,
     default: 0,
   },
+  followTotal: {
+    type: Number,
+    default: 0,
+  },
   price: {
     type: Number,
     required: true,
@@ -91,10 +100,6 @@ const bookSchema = new Schema({
   // acceptedby: {},
   // acceptedat: {},
   // updatedat: {},
-  bookFollowers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  }],
   acceptedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -113,4 +118,3 @@ module.exports = {
   Book,
   Review,
 }
-
