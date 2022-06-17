@@ -38,8 +38,6 @@ router.post('/', verifyToken, createBook)
   .get('/search', searchBook)
   .delete('/book/:bookId', verifyToken, deleteBook)
   .put('/book/:bookId/viewNumber', updateViewNumberBook);
-  // .get('/search', ignoreVerifyToken, searchBook)
-  // .delete('/book/:bookId', verifyToken, deleteBook);
 
 router.post('/:bookId/chapters', verifyToken, createNewChapter) 
   .get('/:bookId/chapters/:chapterNumber', getDetailChapter)
