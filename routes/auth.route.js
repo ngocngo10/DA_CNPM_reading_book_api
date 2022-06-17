@@ -4,15 +4,17 @@ const router = express.Router();
 const { 
   registerUser,
   signIn,
+  logOut,
   forgotPassword,
   verifyResetPasswordCode,
   resetPassword,
-  // refreshToken
+  refreshToken
 } = require('../controllers/auth.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
 router.post('/sign_up', registerUser)
   .post('/sign_in', signIn)
+  .get('/log_out',authMiddleware.verifyToken, logOut)
   .post('/forgot_password', forgotPassword)
   .post('/verify_reset_password_code', verifyResetPasswordCode )
   .patch('/reset_password', authMiddleware.verifyToken, resetPassword)

@@ -10,7 +10,7 @@ async function createNewChapter(req, res, next) {
     const existBook = await Book.findOne({_id: bookId, author: req.user}).populate('chapters');
 
     if (!existBook) {
-      return next(createError(404));
+      return next(createError(403));
     }
 
     const contentLink = await getNewChapterUrl(content);

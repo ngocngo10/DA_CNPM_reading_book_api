@@ -25,6 +25,9 @@ const userSchema = new Schema({
   phoneNumber: {
     type: String
   },
+  refreshToken: {
+    type: String,
+  },
   resetPasswordCode: {
     type: String
   }
