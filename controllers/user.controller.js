@@ -106,33 +106,33 @@ async function createStaffAccount(req, res, next) {
   }
 }
 
-// async function updateUserById(req, res, next) {
-//   try {
-//     const { fullName, roles, password, isLock} = req.body;
-//     const { userId } = req.params;
-//     const user = await User.findById(userId)
-//     if (!user) {
-//       return next(createHttpError(404))
-//     }
-//     if (fullName) {
-//       user.fullName = fullName;
-//     }
-//     if (roles) {
-//       user.roles = roles;
-//     }
-//     if (password) {
-//       const salt = bcrypt.genSaltSync(10);
-//       user.password = bcrypt.hashSync(password, salt);
-//     } 
+async function updateUserById(req, res, next) {
+  try {
+    const { fullName, roles, password, isLock} = req.body;
+    const { userId } = req.params;
+    const user = await User.findById(userId)
+    if (!user) {
+      return next(createHttpError(404))
+    }
+    if (fullName) {
+      user.fullName = fullName;
+    }
+    if (roles) {
+      user.roles = roles;
+    }
+    if (password) {
+      const salt = bcrypt.genSaltSync(10);
+      user.password = bcrypt.hashSync(password, salt);
+    } 
     
-//     user.isLock = isLock;
-//     await user.save();
+    user.isLock = isLock;
+    await user.save();
     
-//     res.status(200).json({ message: 'Updated User.' });
-//   } catch (error) {
-//     next(error);
-//   }
-// }
+    res.status(200).json({ message: 'Updated User.' });
+  } catch (error) {
+    next(error);
+  }
+}
 
 module.exports = {
   getUserProfile,
@@ -140,6 +140,6 @@ module.exports = {
   getAllUsers,
   getUserById,
   updatePassword,
-  // updateUserById,
+  updateUserById,
   createStaffAccount,
 }
