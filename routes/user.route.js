@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getAllUsers,getUserById, updateUserProfile, getUserProfile, updatePassword } = require('../controllers/user.controller');
+const { getAllUsers,getUserById, createStaffAccount, updateUserProfile, getUserProfile, updatePassword } = require('../controllers/user.controller');
 const {verifyToken, isAdmin} = require('../middlewares/auth.middleware');
 const { getFollowedBooks } = require('../controllers/book.controller')
 
 router
   .get('/', verifyToken, isAdmin, getAllUsers)
-  // .post('/', verifyToken, isAdmin, createStaffAccount)
+  .post('/', verifyToken, isAdmin, createStaffAccount)
   .get('/:userId', verifyToken, isAdmin, getUserById)
   // .patch('/:userId',verifyToken, isAdmin, updateUserById)
   .get('/profile', verifyToken, getUserProfile)

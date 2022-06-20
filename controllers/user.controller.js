@@ -72,39 +72,39 @@ async function getUserById(req, res, next) {
   }
 }
 
-// async function createStaffAccount(req, res, next) {
-//   try {
-//     const salt = bcrypt.genSaltSync(10);
-//     const { fullName, email, password, roles } = req.body;
-//     const userExists = await User.findOne({ email });
-//     if (userExists) {
-//       res.status(400).json({ message: 'Email already exists' });
-//     }
-//     for (let item of roles) {
-//       if (!((constants.ADMIN == item) || (item == constants.USER) || (item == constants.MOD))) {
-//        return res.status(400).json({ message: 'Roles of user is wrong' });
-//       }
-//     }
-//     const avatar = process.env.DEFAULT_AVATAR;
-//     const user = await User.create({
-//       email,
-//       fullName,
-//       avatar,
-//       roles,
-//       password: bcrypt.hashSync(password, salt),
-//     });
+async function createStaffAccount(req, res, next) {
+  try {
+    const salt = bcrypt.genSaltSync(10);
+    const { fullName, email, password, roles } = req.body;
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      res.status(400).json({ message: 'Email already exists' });
+    }
+    for (let item of roles) {
+      if (!((constants.ADMIN == item) || (item == constants.USER) || (item == constants.MOD))) {
+       return res.status(400).json({ message: 'Roles of user is wrong' });
+      }
+    }
+    const avatar = process.env.DEFAULT_AVATAR;
+    const user = await User.create({
+      email,
+      fullName,
+      avatar,
+      roles,
+      password: bcrypt.hashSync(password, salt),
+    });
     
-//     res.status(201).json({
-//       _id: user._id,
-//       fullName: user.fullName,
-//       email: user.email,
-//       roles: user.roles,
-//       avatar: user.avatar,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// }
+    res.status(201).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      roles: user.roles,
+      avatar: user.avatar,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 // async function updateUserById(req, res, next) {
 //   try {
@@ -141,5 +141,5 @@ module.exports = {
   getUserById,
   updatePassword,
   // updateUserById,
-  // createStaffAccount,
+  createStaffAccount,
 }
