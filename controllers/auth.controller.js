@@ -9,7 +9,7 @@ const fs = require('fs');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
-async function registerUser (req, res, next) {
+async function registerUser(req, res, next) {
   try {
     const salt = bcrypt.genSaltSync(10);
     const { fullName, email, password } = req.body;
@@ -24,6 +24,9 @@ async function registerUser (req, res, next) {
       avatar,
       password: bcrypt.hashSync(password, salt),
     });
+    const refreshToken = generateRefreshToken(user._id);
+    user.refreshToken = refreshToken;
+    await user.save();
     res.status(201).json({
       _id: user._id,
       fullName: user.fullName,
@@ -31,14 +34,14 @@ async function registerUser (req, res, next) {
       roles: user.roles,
       avatar: user.avatar,
       token: generateToken(user._id),
-      refreshToken: generateRefreshToken(user._id),
+      refreshToken: refreshToken,
     });
   } catch (error) {
     next(error);
   }
 }
 
-async function signIn (req, res, next) {
+async function signIn(req, res, next) {
   try {
     const { email, password } = req.body
     const user = await User.findOne({ email })
@@ -48,6 +51,9 @@ async function signIn (req, res, next) {
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(404).json({ message: 'Email or password is invalid.' });
     }
+    const refreshToken = generateRefreshToken(user._id)
+    user.refreshToken = refreshToken;
+    await user.save();
     return res.json({
       _id: user._id,
       fullName: user.fullName,
@@ -55,14 +61,15 @@ async function signIn (req, res, next) {
       roles: user.roles,
       avatar: user.avatar,
       token: generateToken(user._id),
-      refreshToken: generateRefreshToken(user._id),
+      refreshToken: refreshToken,
     });
+
   } catch (error) {
     next(error);
   }
 }
 
-async function forgotPassword (req, res, next) {
+async function forgotPassword(req, res, next) {
   try {
     const { email } = req.body
     const user = await User.findOne({ email })
@@ -84,7 +91,7 @@ async function forgotPassword (req, res, next) {
       from: process.env.MASTER_EMAIL,
       to: user.email,
       subject: 'Password Reset Confirm',
-      html: fs.readFileSync(path.join(__dirname,'../views/mailers/reset_password_code.html'), 'utf-8')
+      html: fs.readFileSync(path.join(__dirname, '../views/mailers/reset_password_code.html'), 'utf-8')
         .replace('{user.fullName}', user.fullName)
         .replace('{user.resetPasswordCode}', user.resetPasswordCode)
 
@@ -99,14 +106,14 @@ async function forgotPassword (req, res, next) {
   }
 }
 
-async function verifyResetPasswordCode (req, res, next) {
+async function verifyResetPasswordCode(req, res, next) {
   try {
     const { email, resetPasswordCode } = req.body
     const user = await User.findOne({ email, resetPasswordCode })
     if (!user) {
       return res.status(404).json({ message: 'Code is invalid.' });
     }
-    
+
     user.resetPasswordCode = '';
     await user.save();
 
@@ -119,9 +126,9 @@ async function verifyResetPasswordCode (req, res, next) {
   }
 }
 
-async function resetPassword (req, res, next) {
+async function resetPassword(req, res, next) {
   try {
-    const { email, password} = req.body;
+    const { email, password } = req.body;
     // if (password !== confirmPassword) {
     //   return res.status(400).json({
     //     message: 'Confirm password is not the same as password'
@@ -143,39 +150,57 @@ async function resetPassword (req, res, next) {
   }
 }
 
-// async function refreshToken(req, res, next) {
-//   const token = req.body.refreshToken.replace('Bearer ', '');
-//   if (!token) {
-//     res.status(400).json({ message: 'no refresh token' });
-//   }
-//   let user;
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-//     user = await User.findById(decoded.id).select('-password');
-//     if (!user) return res.status(400).json({ message: 'Invalid refresh token' });
-//   } catch (error) {
-//     console.log(error);
-//     if (error.name === 'TokenExpiredError') {
-//       return res.status(400).json({
-//         message: 'Refresh token is expired.'
-//       });
-//     } else {
-//       return res.status(400).json({
-//         message: 'Refresh token is invalid.'
-//       });
-//     }
-//   }
-//   const newToken = generateToken(user._id);
-//   return res.status(200).json({
-//     token: newToken,
-//   });
-// }
+async function refreshToken(req, res, next) {
+  const refreshToken = req.body.refreshToken.replace('Bearer ', '');
+  if (!refreshToken) {
+    res.status(400).json({ message: 'no refresh token' });
+  }
+  let user;
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      return res.status(401).json({message: 'Not Found User'})
+    }
+    if (user.refreshToken !== refreshToken) { 
+      return res.status(400).json({
+        message: 'Refresh token is invalid.'
+      });
+    } 
+    const newToken = generateToken(user._id);
+    return res.status(200).json({
+      token: newToken,
+    });   
+  } catch (error) {
+    console.log(error);
+    if (error.name === 'TokenExpiredError') {
+      return res.status(400).json({
+        message: 'Refresh token is expired.'
+      });
+    }
+    return res.status(401).json({message: 'Not Found User'});
+  }
+}
+
+async function logOut(req, res, next) {
+  try {
+    console.log("HIHI");
+    const user = req.user;
+    console.log(user);
+    user.refreshToken = null;
+    await user.save();
+    return res.status(200).json({message: 'Log out success.'})
+  } catch (error) {
+    next(error)
+  }
+}
 
 module.exports = {
   registerUser,
   signIn,
+  logOut,
   forgotPassword,
   verifyResetPasswordCode,
   resetPassword,
-  // refreshToken
+  refreshToken
 }
