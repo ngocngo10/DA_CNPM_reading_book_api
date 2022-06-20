@@ -92,6 +92,7 @@ async function createStaffAccount(req, res, next) {
       avatar,
       roles,
       password: bcrypt.hashSync(password, salt),
+      // isLock
     });
     
     res.status(201).json({
@@ -114,18 +115,19 @@ async function updateUserById(req, res, next) {
     if (!user) {
       return next(createHttpError(404))
     }
-    if (fullName) {
+    if (typeof fullName !== 'undefined') {
       user.fullName = fullName;
     }
-    if (roles) {
+    if (typeof roles !== 'undefined') {
       user.roles = roles;
     }
-    if (password) {
+    if (typeof password !== 'undefined') {
       const salt = bcrypt.genSaltSync(10);
       user.password = bcrypt.hashSync(password, salt);
     } 
-    
-    user.isLock = isLock;
+    if (typeof isLock !== 'undefined') {
+      user.isLock = isLock;
+    } 
     await user.save();
     
     res.status(200).json({ message: 'Updated User.' });
