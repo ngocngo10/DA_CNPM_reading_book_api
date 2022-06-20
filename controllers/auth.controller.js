@@ -1,7 +1,6 @@
 const { generateToken, generateRefreshToken } = require('../utils/generateToken');
 const { resetPasswordToken } = require('../utils/resetPasswordToken');
 const bcrypt = require('bcryptjs');
-const { token } = require('morgan');
 const nodemailer = require('nodemailer');
 const path = require('path');
 const User = require('../models/user.model');
