@@ -61,17 +61,16 @@ async function getAllUsers(req, res, next) {
   }
 }
 
-
-// async function getUserById(req, res, next) {
-//   const userId = req.params.userId;
-//   try {
-//     const user = await User.findById(userId).select('-password -resetPasswordCode -phoneNumber').exec();
-//     res.status(200).json(user);
-//   } catch (error) {
-//     console.error(error);
-//     next(error)
-//   }
-// }
+async function getUserById(req, res, next) {
+  const userId = req.params.userId;
+  try {
+    const user = await User.findById(userId).select('-password -resetPasswordCode -phoneNumber').exec();
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    next(error)
+  }
+}
 
 // async function createStaffAccount(req, res, next) {
 //   try {
@@ -139,7 +138,7 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   getAllUsers,
-  // getUserById,
+  getUserById,
   updatePassword,
   // updateUserById,
   // createStaffAccount,
