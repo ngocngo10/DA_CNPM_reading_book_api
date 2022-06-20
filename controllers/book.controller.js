@@ -328,6 +328,25 @@ async function getFollowedBooks(req, res, next) {
   }
 }
 
+async function updateBookStatus(req, res, next) {
+  try {
+    const book = await Book.findById(req.params.bookId);
+
+    if (!book) {
+      return next(createError(404));
+    }
+    if (!book.author.equals(req.user._id)) {
+      return next(createError(403));
+    }
+
+    book.status = req.body.status;
+    await book.save();
+    return res.status(200).json({ message: 'Book status has been updated.' });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createBook,
   getBookById,
@@ -338,5 +357,6 @@ module.exports = {
   getBooksInCategory,
   deleteBook,
   updateViewNumberBook,
-  getFollowedBooks
+  getFollowedBooks,
+  updateBookStatus
 }

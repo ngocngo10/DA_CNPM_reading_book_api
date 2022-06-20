@@ -9,7 +9,8 @@ const {
   getBooksInCategory,
   getBookByAuthor,
   deleteBook,
-  updateViewNumberBook
+  updateViewNumberBook,
+  updateBookStatus
 } = require('../controllers/book.controller');
 
 const {
@@ -34,6 +35,7 @@ router.post('/', verifyToken, createBook)
   .get('/category/:categoryId', ignoreVerifyToken, getBooksInCategory)
   .get('/book/:bookId', ignoreVerifyToken, getBookById)
   .put('/book/:bookId', verifyToken, updateBook)
+  .patch('/book/:bookId/status', verifyToken, updateBookStatus)
   .get('/author', verifyToken, getBookByAuthor)
   .get('/search', searchBook)
   .delete('/book/:bookId', verifyToken, deleteBook)

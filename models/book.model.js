@@ -73,6 +73,11 @@ const bookSchema = new Schema({
     type: String,
     required: true
   },
+  status: {
+    type: String,
+    enum : ['Ongoing', 'Completed', 'Paused'],
+    default: 'Ongoing'
+  },
   chapters: [chapterSchema],
   viewNumber: {
     type: Number,
