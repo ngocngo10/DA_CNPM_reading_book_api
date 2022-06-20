@@ -50,6 +50,9 @@ async function signIn(req, res, next) {
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(404).json({ message: 'Email or password is invalid.' });
     }
+    if (user.isLock) {
+      return res.status(403).json({ message: "Account has been locked" });
+    }
     const refreshToken = generateRefreshToken(user._id)
     user.refreshToken = refreshToken;
     await user.save();

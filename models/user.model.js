@@ -22,6 +22,10 @@ const userSchema = new Schema({
     required: true,
     default: ['user']
   },
+  isLock: {
+    type: Boolean,
+    default: false,
+  },
   phoneNumber: {
     type: String
   },
