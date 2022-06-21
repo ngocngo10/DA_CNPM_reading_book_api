@@ -12,6 +12,6 @@ router
   .get('/profile', verifyToken, getUserProfile)
   .put('/profile', verifyToken, updateUserProfile)
   .put('/change-password', verifyToken, updatePassword)
-  .get('/followed-books', verifyToken, getFollowedBooks)
+  .get('/user/followed-books', verifyToken, getFollowedBooks)
 
 module.exports = router;
