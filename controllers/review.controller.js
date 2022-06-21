@@ -59,7 +59,7 @@ async function getAllReviewsInBook(req, res, next) {
 
 async function deleteReviewInBook(req, res, next) {
   const { reviewId, bookId } = req.params;
-  if (typeof req.params.bookId === null || typeof req.params.reviewId === null) {
+  if (typeof req.params.bookId === 'undefined' || typeof req.params.reviewId === 'undefined') {
     return res.json({
       status: "Error",
       message: "Data is undefined"
@@ -78,14 +78,12 @@ async function deleteReviewInBook(req, res, next) {
       if(!findedReview) {
         return next(createError(404));
       }
-      if(findedReview.user._id.equals(req.user._id) || req.user.roles.includes(constants.ADMIN)) {
-        console.log(findedReview);
+      if(findedReview.user._id.equals(req.user._id) || req.user.roles.includes(constants.MOD)) {
         if (!findedReview) return res.status(403).json({ message: 'Unauthorized delete this review' });
         book.avrStarNumber = (book.avrStarNumber * book.reviewTotal - findedReview.starNumber) / (book.reviewTotal - 1);
         book.reviewTotal = book.reviewTotal - 1;
         book.reviews.pull(findedReview);
         await book.save();
-        console.log(book);
         return res.status(200).json({ message: 'Deleted review' });
       }
       return res.status(403).json({message: "Unauthorized delete this review"});

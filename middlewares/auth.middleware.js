@@ -50,8 +50,8 @@ async function isAdmin(req, res, next) {
   }
 }
 
-async function isStaff(req, res, next) {
-  if (req.user.roles.includes(constants.STAFF)) {
+async function isMod(req, res, next) {
+  if (req.user.roles.includes(constants.MOD)) {
     next();
   } else {
     next(createError(403));
@@ -61,6 +61,6 @@ async function isStaff(req, res, next) {
 module.exports = {
   verifyToken,
   isAdmin,
-  isStaff,
+  isMod,
   ignoreVerifyToken
 };
