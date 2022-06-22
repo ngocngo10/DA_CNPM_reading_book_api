@@ -12,7 +12,8 @@ const {
   updateViewNumberBook,
   updateBookStatus,
   acceptBook,
-  getAllAcceptedBook
+  getAllAcceptedBook,
+  getAllUnAcceptedBook
 } = require('../controllers/book.controller');
 
 const {
@@ -44,7 +45,7 @@ router.post('/', verifyToken, createBook)
   .put('/book/:bookId/viewNumber', updateViewNumberBook)
   .patch('/book/:bookId/accept-book', verifyToken, isMod, acceptBook)
   .get('/accepted-books', verifyToken, isMod, getAllAcceptedBook)
-  // .get('/unaccepted-books', verifyToken, isMod, getAllUnAcceptedBook)
+  .get('/unaccepted-books', verifyToken, isMod, getAllUnAcceptedBook)
 
 router.post('/:bookId/chapters', verifyToken, createNewChapter) 
   .get('/:bookId/chapters/:chapterNumber', getDetailChapter)

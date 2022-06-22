@@ -412,6 +412,40 @@ async function getAllAcceptedBook(req, res, next) {
   }
 }
 
+async function getAllUnAcceptedBook(req, res, next) {
+  try {
+    const sort = req.query.sort == "desc" ? -1 : 1;
+    const typeSort = req.query.typeSort;
+    const pageSize = req.query.pageSize;
+    const page = Number(req.query.pageNumber) || 1;
+    const sortItem = {};
+    sortItem[typeSort] = sort;
+
+    const books = await
+      Book.find({ isAccept: { $ne: true } }).limit(pageSize).sort(sortItem).skip(pageSize * (page - 1))
+        .populate({
+          path: 'category',
+          select: 'categoryName'
+        })
+        .populate({
+          path: 'author',
+          select: 'fullName'
+        })
+        .populate({
+          path: 'acceptedBy',
+          select: 'fullName avatar'
+        });
+    if (!books) {
+      return next(createError(404));
+    }
+    const count = await books.length;
+    return res.status(200).json({ books, page, pages: Math.ceil(count / pageSize) });
+  }
+  catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createBook,
   getBookById,
@@ -425,5 +459,6 @@ module.exports = {
   getFollowedBooks,
   updateBookStatus,
   acceptBook,
-  getAllAcceptedBook
+  getAllAcceptedBook,
+  getAllUnAcceptedBook
 }
