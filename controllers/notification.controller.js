@@ -38,7 +38,7 @@ async function getNotifications(req, res, next) {
       // })
       .populate({
         path: 'book',
-        select: 'bookName'
+        select: 'bookName coverImageURL'
       }).exec();
     return res.json(notifications);
   } catch (error) {
