@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getAllUsers,getUserById, createStaffAccount, updateUserById, updateUserProfile, getUserProfile, updatePassword } = require('../controllers/user.controller');
-const {verifyToken, isAdmin} = require('../middlewares/auth.middleware');
+const {verifyToken, isAdmin, isMod} = require('../middlewares/auth.middleware');
 const { getFollowedBooks } = require('../controllers/book.controller')
 
 router
@@ -13,5 +13,6 @@ router
   .put('/profile', verifyToken, updateUserProfile)
   .put('/change-password', verifyToken, updatePassword)
   .get('/user/followed-books', verifyToken, getFollowedBooks)
+
 
 module.exports = router;

@@ -10,7 +10,8 @@ const {
   getBookByAuthor,
   deleteBook,
   updateViewNumberBook,
-  updateBookStatus
+  updateBookStatus,
+  acceptBook,
 } = require('../controllers/book.controller');
 
 const {
@@ -28,7 +29,7 @@ const {
 } = require('../controllers/review.controller');
 
 const { validateCreateReview } = require('../middlewares/validate.middleware');
-const { verifyToken, isAdmin, ignoreVerifyToken } = require('../middlewares/auth.middleware');
+const { verifyToken, isAdmin, ignoreVerifyToken, isMod } = require('../middlewares/auth.middleware');
 
 router.post('/', verifyToken, createBook)
   .get('/', ignoreVerifyToken, getAllBooks)
@@ -39,7 +40,10 @@ router.post('/', verifyToken, createBook)
   .get('/author', verifyToken, getBookByAuthor)
   .get('/search', searchBook)
   .delete('/book/:bookId', verifyToken, deleteBook)
-  .put('/book/:bookId/viewNumber', updateViewNumberBook);
+  .put('/book/:bookId/viewNumber', updateViewNumberBook)
+  .patch('/book/:bookId/accept-book', verifyToken, isMod, acceptBook);
+  // .get('/accepted-books', verifyToken, isMod, getAllAcceptedBook)
+  // .get('/unaccepted-books', verifyToken, isMod, getAllUnAcceptedBook)
 
 router.post('/:bookId/chapters', verifyToken, createNewChapter) 
   .get('/:bookId/chapters/:chapterNumber', getDetailChapter)

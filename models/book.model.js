@@ -105,6 +105,10 @@ const bookSchema = new Schema({
   // acceptedby: {},
   // acceptedat: {},
   // updatedat: {},
+  isAccept: {
+    type: Boolean,
+    default: false,
+  },
   acceptedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

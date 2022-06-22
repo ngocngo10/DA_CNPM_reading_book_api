@@ -3,6 +3,7 @@ const Follow = require('../models/follow.model');
 const User = require('../models/user.model');
 const createError = require('http-errors');
 const { ObjectID } = require('typeorm');
+const constants = require('../utils/constants')
 
 async function createBook(req, res, next) {
   try {
@@ -51,7 +52,6 @@ async function getAllBooks(req, res, next) {
         },
       }
       : {}
-    const count = await Book.countDocuments({ ...keyword });
     let follows;
     if (req.user) {
       follows = await Follow.find({ user: req.user._id });
@@ -59,7 +59,7 @@ async function getAllBooks(req, res, next) {
     const sortItem = {};
     sortItem[typeSort] = sort;
     const books = await
-      Book.find({ ...keyword }).limit(pageSize).sort(sortItem).skip(pageSize * (page - 1))
+      Book.find({ ...keyword, isAccept: true }).limit(pageSize).sort(sortItem).skip(pageSize * (page - 1))
         .populate({
           path: 'category',
           select: 'categoryName'
@@ -71,6 +71,7 @@ async function getAllBooks(req, res, next) {
     if (!books) {
       return next(createError(404));
     }
+    const count = await books.length;
     if (req.user) {
       const result = books.map(book => {
         const followedCheck = follows.some(element => element.book._id.equals(book._id));
@@ -81,7 +82,7 @@ async function getAllBooks(req, res, next) {
       })
       return res.status(200).json({ result, page, pages: Math.ceil(count / pageSize) });
     }
-    return res.status(200).json(books);
+    return res.status(200).json({ books, page, pages: Math.ceil(count / pageSize) });
   } catch (error) {
     next(error);
   }
@@ -96,8 +97,28 @@ async function getBookById(req, res, next) {
         user: req.user._id,
         book: bookId
       });
+      if (req.user.roles.includes(constants.MOD)) {
+        const book = await Book.findOne({ _id: bookId })
+          .populate({
+            path: 'author',
+            select: '_id fullName email'
+          })
+          .populate({
+            path: 'category',
+            select: 'categoryName'
+          }).exec();
+        if (!book) {
+          return next(createError(404));
+        }
+        book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
+
+        return res.status(200).json({
+          ...book.toObject(),
+          isFollowed: !!follow,
+        });
+      }
     }
-    const book = await Book.findById(bookId)
+    const book = await Book.findOne({ _id: bookId, isAccept: true })
       .populate({
         path: 'author',
         select: '_id fullName email'
@@ -110,13 +131,6 @@ async function getBookById(req, res, next) {
       return next(createError(404));
     }
     book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
-
-    if (req.user) {
-      return res.status(200).json({
-        ...book.toObject(),
-        isFollowed: !!follow,
-      });
-    }
     return res.status(200).json(book);
   } catch (error) {
     next(error);
@@ -314,7 +328,7 @@ async function getFollowedBooks(req, res, next) {
       .populate({
         path: 'book',
       });
-    const books = follows.map(item => item.book); 
+    const books = follows.map(item => item.book);
     console.log(books);
     const result = books.map(book => {
       return {
@@ -347,6 +361,25 @@ async function updateBookStatus(req, res, next) {
   }
 }
 
+async function acceptBook(req, res, next) {
+  try {
+    const book = await Book.findById(req.params.bookId);
+
+    if (!book) {
+      return next(createError(404));
+    }
+    book.isAccept = req.body.isAccept;
+    book.acceptedBy = req.user._id;
+    book.acceptedDate = new Date();
+    await book.save();
+    console.log(book)
+    return res.status(200).json({ message: 'Book status has been accept' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+
 module.exports = {
   createBook,
   getBookById,
@@ -358,5 +391,6 @@ module.exports = {
   deleteBook,
   updateViewNumberBook,
   getFollowedBooks,
-  updateBookStatus
+  updateBookStatus,
+  acceptBook,
 }
