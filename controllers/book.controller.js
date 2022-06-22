@@ -150,7 +150,7 @@ async function updateBook(req, res, next) {
     const book = await Book.findById(bookId)
       .populate({
         path: 'author',
-        select: '-_id fullName'
+        select: '_id fullName'
       })
       .populate({
         path: 'category',
@@ -159,15 +159,19 @@ async function updateBook(req, res, next) {
     if (!book) {
       return next(createError(404));
     }
-    console.log(book);
-    book.bookName = bookName;
-    book.category = categoryId;
-    book.description = description;
-    book.coverImageURL = coverImageURL;
-    book.price = price;
+    if(book.author.equals(req.user) || req.user.roles.includes(constants.MOD)) {
+      book.bookName = bookName;
+      book.category = categoryId;
+      book.description = description;
+      book.coverImageURL = coverImageURL;
+      book.price = price;
+      await book.save();
+      return res.json({ message: "Update book successed" });
+    }
+    else {
+      return res.status(401).json({ message: "Unthorized update book" });
+    }
 
-    await book.save();
-    return res.json({ message: "Update book successed" });
   } catch (error) {
     next(error);
   }
