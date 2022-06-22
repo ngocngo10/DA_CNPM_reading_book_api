@@ -169,7 +169,7 @@ async function updateBook(req, res, next) {
       return res.json({ message: "Update book successed" });
     }
     else {
-      return res.status(401).json({ message: "Unthorized update book" });
+      return res.status(403).json({ message: "Unthorized update book" });
     }
 
   } catch (error) {
@@ -185,8 +185,7 @@ async function deleteBook(req, res, next) {
         path: 'author',
       }).exec();
     if (book) {
-      console.log(book.author._id, req.user._id);
-      if (book.author._id.equals(req.user._id)) {
+      if (book.author._id.equals(req.user._id) || req.user.roles.includes(constants.MOD)) {
         await book.remove();
         return res.status(200).json({ message: 'Deleted book' });
       }
