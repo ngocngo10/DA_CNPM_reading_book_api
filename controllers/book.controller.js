@@ -404,9 +404,6 @@ async function getAllAcceptedBook(req, res, next) {
           path: 'acceptedBy',
           select: 'fullName avatar'
         });
-    if (!books) {
-      return next(createError(404));
-    }
     const count = await books.length;
     return res.status(200).json({ books, page, pages: Math.ceil(count / pageSize) });
   }
@@ -438,9 +435,6 @@ async function getAllUnAcceptedBook(req, res, next) {
           path: 'acceptedBy',
           select: 'fullName avatar'
         });
-    if (!books) {
-      return next(createError(404));
-    }
     const count = await books.length;
     return res.status(200).json({ books, page, pages: Math.ceil(count / pageSize) });
   }
