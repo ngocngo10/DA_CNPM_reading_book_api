@@ -206,7 +206,7 @@ async function deleteBook(req, res, next) {
         const follow = await Follow.findOne({
           book: bookId,
         });
-        await follow.remove();
+        if (follow) await follow.remove();
         await book.remove();
         return res.status(200).json({ message: 'Deleted book' });
       }
