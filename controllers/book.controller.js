@@ -203,6 +203,10 @@ async function deleteBook(req, res, next) {
       }).exec();
     if (book) {
       if (book.author._id.equals(req.user._id) || req.user.roles.includes(constants.MOD)) {
+        const follow = await Follow.findOne({
+          book: bookId,
+        });
+        await follow.remove();
         await book.remove();
         return res.status(200).json({ message: 'Deleted book' });
       }
