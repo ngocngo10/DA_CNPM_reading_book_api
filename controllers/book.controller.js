@@ -97,8 +97,26 @@ async function getBookById(req, res, next) {
         user: req.user._id,
         book: bookId
       });
-      if (req.user.roles.includes(constants.MOD)) {
-        const book = await Book.findOne({ _id: bookId })
+      const book = await Book.findOne({ _id: bookId })
+        .populate({
+          path: 'author',
+          select: '_id fullName email'
+        })
+        .populate({
+          path: 'category',
+          select: 'categoryName'
+        }).exec();
+      if (!book) {
+        return next(createError(404));
+      }
+      if (req.user.roles.includes(constants.MOD) || book.author.equals(req.user)) {
+        book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
+        return res.status(200).json({
+          ...book.toObject(),
+          isFollowed: !!follow,
+        });
+      } else {
+        const findedBook = await Book.findOne({ _id: bookId, isAccept: true })
           .populate({
             path: 'author',
             select: '_id fullName email'
@@ -107,13 +125,12 @@ async function getBookById(req, res, next) {
             path: 'category',
             select: 'categoryName'
           }).exec();
-        if (!book) {
+        if (!findedBook) {
           return next(createError(404));
         }
-        book.avrStarNumber = Math.round(book.avrStarNumber * 100) / 100;
-
+        findedBook.avrStarNumber = Math.round(findedBook.avrStarNumber * 100) / 100;
         return res.status(200).json({
-          ...book.toObject(),
+          ...findedBook.toObject(),
           isFollowed: !!follow,
         });
       }
@@ -159,7 +176,7 @@ async function updateBook(req, res, next) {
     if (!book) {
       return next(createError(404));
     }
-    if(book.author.equals(req.user) || req.user.roles.includes(constants.MOD)) {
+    if (book.author.equals(req.user) || req.user.roles.includes(constants.MOD)) {
       book.bookName = bookName;
       book.category = categoryId;
       book.description = description;
