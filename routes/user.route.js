@@ -9,8 +9,8 @@ router
   .post('/', verifyToken, isAdmin, createStaffAccount)
   .get('/:userId', verifyToken, isAdmin, getUserById)
   .patch('/:userId',verifyToken, isAdmin, updateUserById)
-  .get('/profile', verifyToken, getUserProfile)
-  .put('/profile', verifyToken, updateUserProfile)
+  .get('/user/profile', verifyToken, getUserProfile)
+  .put('/user/profile', verifyToken, updateUserProfile)
   .put('/change-password', verifyToken, updatePassword)
   .get('/user/followed-books', verifyToken, getFollowedBooks)
 

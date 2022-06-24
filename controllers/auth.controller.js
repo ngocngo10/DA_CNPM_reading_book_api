@@ -82,7 +82,10 @@ async function forgotPassword(req, res, next) {
     user.resetPasswordCode = resetPasswordCode;
     await user.save();
     var transporter = nodemailer.createTransport({
-      service: 'gmail',
+      // service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.MASTER_EMAIL,
         pass: process.env.MASTER_PASSWORD
